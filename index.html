@@ -1,3 +1,30 @@
-<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
-<a href="https://qingfengkuangbao.github.io">个人主页</a>
-<h1>欢迎到来</h1>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Blibli封面</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="never">
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <span>输入视频av号</span>
+        <input type="text" id='av'>
+        <input type="button" value="获取图片" onclick="getImg()">
+    </div>
+<img src="" id='av_img'>
+</body>
+<script>
+var url='https://api.bilibili.com/x/web-interface/view/detail?aid='
+function getImg(){
+    av=$('#av').text
+    $.get(url+av,function(data){
+        console.info(data)
+    })
+}
+</script>
+</html>

@@ -11,23 +11,7 @@
 </head>
 
 <body>
-    <div>
-        <span>输入视频av号</span>
-        <input type="text" id="av">
-        <input type="button" value="获取图片" onclick="getImg()">
-    </div>
-<img src="" id='av_img'>
+<h1>欢迎光临</h1>
+<a href='https://QingFengKuangBao.github.io'个人主页></a>
 </body>
-<script>
-// var url='https://api.bilibili.com/x/web-interface/view/detail?aid='
-var url='https://www.bilibili.com/video/av'
-function getImg(){
-    av=$('#av').val()
-    console.info(av)
-    n_url=url+av
-    $.get(n_url,function(data){
-        console.info(data)
-    })
-}
-</script>
 </html>

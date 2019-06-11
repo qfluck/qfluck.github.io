@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype <!DOCTYPE html>
 <html>
 
 <head>
@@ -6,23 +6,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Blibli封面</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="referrer" content="never">
+    <!-- <meta name="referrer" content="never"> -->
     <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
 </head>
 
 <body>
     <div>
         <span>输入视频av号</span>
-        <input type="text" id='av'>
+        <input type="text" id="av">
         <input type="button" value="获取图片" onclick="getImg()">
     </div>
 <img src="" id='av_img'>
 </body>
 <script>
-var url='https://api.bilibili.com/x/web-interface/view/detail?aid='
+// var url='https://api.bilibili.com/x/web-interface/view/detail?aid='
+var url='https://www.bilibili.com/video/av'
 function getImg(){
-    av=$('#av').text
-    $.get(url+av,function(data){
+    av=$('#av').val()
+    console.info(av)
+    n_url=url+av
+    $.get(n_url,function(data){
         console.info(data)
     })
 }

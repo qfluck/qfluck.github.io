@@ -14,7 +14,8 @@ vless://26f895e2-402c-4f52-b185-fcbfb11601b9@103.201.130.136:2083?encryption=non
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@68.233.127.235:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
 vless://8d4e3f14-467c-4bd6-b665-763e4d731418@185.22.153.168:30252?encryption=none&security=reality&sni=www.speedtest.org&fp=chrome&pbk=UtL7E0Gmxj3X5JdcPAutpTRKo7K2hugkR0vwk2XroUM&type=tcp&headerType=none#justhost
 vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@singapore.qfluck.link:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
-vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@8.222.212.219:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
+vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@8.222.252.150:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
+vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@43.134.180.45:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@us.qfluck.link:443?encryption=none&security=tls&sni=us.qfluck.link&fp=randomized&type=ws&host=us.qfluck.link&path=%2F%3Fed%3D2048#us.qfluck.link
-vless://26f895e2-402c-4f52-b185-fcbfb11601b9@128.14.142.184:443?encryption=none&security=tls&sni=us.qfluck.link&fp=randomized&type=ws&host=us.qfluck.link&path=%2F%3Fed%3D2048#us.qfluck.link
+vless://26f895e2-402c-4f52-b185-fcbfb11601b9@150.230.46.49:443?encryption=none&security=tls&sni=us.qfluck.link&fp=randomized&type=ws&host=us.qfluck.link&path=%2F%3Fed%3D2048#us.qfluck.link
 vless://d342d11e-d424-4583-b36e-524ab1f0afa4@shrouded-treasure-cabin.glitch.me:443?encryption=none&security=tls&fp=randomized&type=ws&host=shrouded-treasure-cabin.glitch.me&path=%2F#shrouded-treasure-cabin.glitch.me

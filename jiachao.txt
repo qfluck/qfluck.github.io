@@ -19,8 +19,8 @@ vless://26f895e2-402c-4f52-b185-fcbfb11601b9@131.186.20.197:443?encryption=none&
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@149.129.8.215:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
 vless://d342d11e-d424-4583-b36e-524ab1f0afa4@shrouded-treasure-cabin.glitch.me:443?encryption=none&security=tls&fp=randomized&type=ws&host=shrouded-treasure-cabin.glitch.me&path=%2F#shrouded-treasure-cabin.glitch.me
 vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@singapore.qfluck.link:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
-vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@8.222.222.64:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
-vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@8.222.193.135:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
+vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@8.222.214.231:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
+vless://4ca28d58-cc3d-484e-93c4-a83fc35a37e5@8.222.221.109:443?encryption=none&security=tls&sni=singapore.qfluck.link&fp=randomized&type=ws&host=singapore.qfluck.link&path=%2F%3Fed%3D2048#singapore.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@tw.qfluck.link:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@165.154.132.204:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@us.qfluck.link:443?encryption=none&security=tls&sni=us.qfluck.link&fp=randomized&type=ws&host=us.qfluck.link&path=%2F%3Fed%3D2048#us.qfluck.link

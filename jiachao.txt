@@ -9,7 +9,6 @@ vless://c93caf31-d01a-45c0-aaed-287e6fa6d6cf@cf.qfluck.link:443?encryption=none&
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@hk.qfluck.link:443?encryption=none&security=tls&sni=hk.qfluck.link&fp=randomized&type=ws&host=hk.qfluck.link&path=%2F%3Fed%3D2048#hk.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@8.222.214.231:443?encryption=none&security=tls&sni=hk.qfluck.link&fp=randomized&type=ws&host=hk.qfluck.link&path=%2F%3Fed%3D2048#hk.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@jp.qfluck.link:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
-vless://26f895e2-402c-4f52-b185-fcbfb11601b9@61.195.190.99:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@192.169.127.184:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@kr.qfluck.link:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@131.186.20.197:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link

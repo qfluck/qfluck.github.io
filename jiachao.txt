@@ -8,8 +8,8 @@ vless://26f895e2-402c-4f52-b185-fcbfb11601b9@kr.qfluck.link:443?encryption=none&
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@129.154.194.61:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@146.56.147.241:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
 vless://156e16fe-69e3-44e0-bd2f-d4893b332527@sg.qfluck.link:443?encryption=none&security=tls&sni=sg.qfluck.link&fp=randomized&type=ws&host=sg.qfluck.link&path=%2F%3Fed%3D2048#sg.qfluck.link
-vless://156e16fe-69e3-44e0-bd2f-d4893b332527@8.222.213.221:2083?encryption=none&security=tls&sni=sg.qfluck.link&fp=randomized&type=ws&host=sg.qfluck.link&path=%2F%3Fed%3D2048#sg.qfluck.link
-vless://156e16fe-69e3-44e0-bd2f-d4893b332527@8.222.213.221:443?encryption=none&security=tls&sni=sg.qfluck.link&fp=randomized&type=ws&host=sg.qfluck.link&path=%2F%3Fed%3D2048#sg.qfluck.link
+vless://156e16fe-69e3-44e0-bd2f-d4893b332527@129.150.37.59:2083?encryption=none&security=tls&sni=sg.qfluck.link&fp=randomized&type=ws&host=sg.qfluck.link&path=%2F%3Fed%3D2048#sg.qfluck.link
+vless://156e16fe-69e3-44e0-bd2f-d4893b332527@129.150.37.59:443?encryption=none&security=tls&sni=sg.qfluck.link&fp=randomized&type=ws&host=sg.qfluck.link&path=%2F%3Fed%3D2048#sg.qfluck.link
 vless://d342d11e-d424-4583-b36e-524ab1f0afa4@shrouded-treasure-cabin.glitch.me:443?encryption=none&security=tls&fp=randomized&type=ws&host=shrouded-treasure-cabin.glitch.me&path=%2F#shrouded-treasure-cabin.glitch.me
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@tw.qfluck.link:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@158.178.225.12:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link

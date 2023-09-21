@@ -9,5 +9,4 @@
 
 
 
-nv-v2ZhohZCw5Y6fYtSCkNoN0V4x0SSUmr92c4QAakzASIx2O4i
-https://api.nova-oss.com/v1
+

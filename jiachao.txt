@@ -1,3 +1,4 @@
+vless://2f126461-d484-4d77-a480-420dc570975f@buff.lookb.link:443?encryption=none&security=tls&sni=best.qfluck.link&fp=randomized&type=ws&host=best.qfluck.link&path=%2F%3Fed%3D2048#best.qfluck.link
 vless://df5e75c9-2046-4fa4-9e1e-0b44fc6881c1@us.qfluck.link:443?encryption=none&security=tls&sni=us.qfluck.link&fp=randomized&type=ws&host=us.qfluck.link&path=%2F%3Fed%3D2048#us.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@tw.qfluck.link:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@158.178.225.12:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link
@@ -8,11 +9,11 @@ vless://26f895e2-402c-4f52-b185-fcbfb11601b9@kr.qfluck.link:443?encryption=none&
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@130.162.154.209:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@130.162.154.209:80?encryption=none&security=none&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@jp.qfluck.link:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
-vless://26f895e2-402c-4f52-b185-fcbfb11601b9@buff.lookb.link:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
+vless://26f895e2-402c-4f52-b185-fcbfb11601b9@146.56.177.173:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
 vless://30235e2c-9692-4506-d6a0-7d89f0121bb5@cf.qfluck.link:443?encryption=none&security=tls&type=ws&host=cf.qfluck.link&path=%2Fjiachao#jia-cf-ssl
-vless://30235e2c-9692-4506-d6a0-7d89f0121bb5@146.56.170.190:443?encryption=none&security=tls&type=ws&host=cf.qfluck.link&path=%2Fjiachao#jia-cf-ssl
+vless://30235e2c-9692-4506-d6a0-7d89f0121bb5@cn.king360.eu.org:443?encryption=none&security=tls&type=ws&host=cf.qfluck.link&path=%2Fjiachao#jia-cf-ssl
 vless://30235e2c-9692-4506-d6a0-7d89f0121bb5@cf.qfluck.link:80?encryption=none&security=none&type=ws&host=cf.qfluck.link&path=%2Fjiachao#jia-cf
-vless://30235e2c-9692-4506-d6a0-7d89f0121bb5@130.162.154.209:80?encryption=none&security=none&type=ws&host=cf.qfluck.link&path=%2Fjiachao#jia-cf
+vless://30235e2c-9692-4506-d6a0-7d89f0121bb5@cn.king360.eu.org:80?encryption=none&security=none&type=ws&host=cf.qfluck.link&path=%2Fjiachao#jia-cf
 vless://63d62665-0a12-4ddb-f84c-39cc6c5df247@142.171.233.114:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=63d62665.com&fp=chrome&pbk=rYH4wPTVzSwtpXgI3U7YxppIP6oudD-425vT7pyhj1w&type=tcp&headerType=none#jia
 vless://72959b08-7944-4474-ce5e-f2f4c18545c1@142-171-233-114.nip.io:31471?encryption=none&flow=xtls-rprx-vision&security=tls&sni=142-171-233-114.nip.io&fp=chrome&type=tcp&headerType=none#jia
 vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogImppYSIsDQogICJhZGQiOiAiMTQyLjE3MS4yMzMuMTE0IiwNCiAgInBvcnQiOiAiNTExMzQiLA0KICAiaWQiOiAiMjFlYzVmODAtZjM5ZC00NjdhLWQ5MmMtN2FlNThiYjJiMjU2IiwNCiAgImFpZCI6ICIwIiwNCiAgInNjeSI6ICJhdXRvIiwNCiAgIm5ldCI6ICJ3cyIsDQogICJ0eXBlIjogIm5vbmUiLA0KICAiaG9zdCI6ICIiLA0KICAicGF0aCI6ICIvMjFlYzVmODAiLA0KICAidGxzIjogIm5vbmUiLA0KICAic25pIjogIiIsDQogICJhbHBuIjogIiINCn0=

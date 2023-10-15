@@ -1,12 +1,12 @@
 vless://2f126461-d484-4d77-a480-420dc570975f@buff.lookb.link:443?encryption=none&security=tls&sni=best.qfluck.link&fp=randomized&type=ws&host=best.qfluck.link&path=%2F%3Fed%3D2048#best.qfluck.link
 vless://df5e75c9-2046-4fa4-9e1e-0b44fc6881c1@us.qfluck.link:443?encryption=none&security=tls&sni=us.qfluck.link&fp=randomized&type=ws&host=us.qfluck.link&path=%2F%3Fed%3D2048#us.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@tw.qfluck.link:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link
-vless://26f895e2-402c-4f52-b185-fcbfb11601b9@8.222.164.209:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link
+vless://26f895e2-402c-4f52-b185-fcbfb11601b9@8.209.240.229:443?encryption=none&security=tls&sni=tw.qfluck.link&fp=randomized&type=ws&host=tw.qfluck.link&path=%2F%3Fed%3D2048#tw.qfluck.link
 vless://d342d11e-d424-4583-b36e-524ab1f0afa4@shrouded-treasure-cabin.glitch.me:443?encryption=none&security=tls&fp=randomized&type=ws&host=shrouded-treasure-cabin.glitch.me&path=%2F#shrouded-treasure-cabin.glitch.me
 vless://156e16fe-69e3-44e0-bd2f-d4893b332527@sg.qfluck.link:443?encryption=none&security=tls&sni=sg.qfluck.link&fp=randomized&type=ws&host=sg.qfluck.link&path=%2F%3Fed%3D2048#sg.qfluck.link
-vless://156e16fe-69e3-44e0-bd2f-d4893b332527@8.222.164.209:443?encryption=none&security=tls&sni=sg.qfluck.link&fp=randomized&type=ws&host=sg.qfluck.link&path=%2F%3Fed%3D2048#sg.qfluck.link
+vless://156e16fe-69e3-44e0-bd2f-d4893b332527@8.209.240.229:443?encryption=none&security=tls&sni=sg.qfluck.link&fp=randomized&type=ws&host=sg.qfluck.link&path=%2F%3Fed%3D2048#sg.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@kr.qfluck.link:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
-vless://26f895e2-402c-4f52-b185-fcbfb11601b9@8.222.164.209:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
+vless://26f895e2-402c-4f52-b185-fcbfb11601b9@8.209.240.229:443?encryption=none&security=tls&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@8.209.215.247:80?encryption=none&security=none&sni=kr.qfluck.link&fp=randomized&type=ws&host=kr.qfluck.link&path=%2F%3Fed%3D2048#kr.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@jp.qfluck.link:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@8.209.215.247:443?encryption=none&security=tls&sni=jp.qfluck.link&fp=randomized&type=ws&host=jp.qfluck.link&path=%2F%3Fed%3D2048#jp.qfluck.link
@@ -20,5 +20,5 @@ vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogImppYSIsDQogICJhZGQiOiAiMTQyLjE3MS4yMzMu
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@hk.qfluck.link:443?encryption=none&security=tls&sni=hk.qfluck.link&fp=randomized&type=ws&host=hk.qfluck.link&path=%2F%3Fed%3D2048#hk.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@8.222.164.209:443?encryption=none&security=tls&sni=hk.qfluck.link&fp=randomized&type=ws&host=hk.qfluck.link&path=%2F%3Fed%3D2048#hk.qfluck.link
 vless://26f895e2-402c-4f52-b185-fcbfb11601b9@de.qfluck.link:443?encryption=none&security=tls&sni=de.qfluck.link&fp=randomized&type=ws&host=de.qfluck.link&path=%2F%3Fed%3D2048#de.qfluck.link
-vless://2f126461-d484-4d77-a480-420dc570975f@8.222.164.209:443?encryption=none&security=tls&sni=best.qfluck.link&fp=randomized&type=ws&host=best.qfluck.link&path=%2F%3Fed%3D2048#best.qfluck.link
+vless://2f126461-d484-4d77-a480-420dc570975f@8.209.240.229:443?encryption=none&security=tls&sni=best.qfluck.link&fp=randomized&type=ws&host=best.qfluck.link&path=%2F%3Fed%3D2048#best.qfluck.link
 vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogIm1vYmlsZSIsDQogICJhZGQiOiAiMTQyLjE3MS4yMzMuMTE0IiwNCiAgInBvcnQiOiAiODAiLA0KICAiaWQiOiAiOWNhZWVjYTktNmIwMC00MTM3LWJkODEtYjZlMjI5ODYzMDc5IiwNCiAgImFpZCI6ICIwIiwNCiAgInNjeSI6ICJhdXRvIiwNCiAgIm5ldCI6ICJ0Y3AiLA0KICAidHlwZSI6ICJodHRwIiwNCiAgImhvc3QiOiAiYXBpLm1vYmlsZS55b3VrdS5jb20iLA0KICAicGF0aCI6ICIvIiwNCiAgInRscyI6ICJub25lIiwNCiAgInNuaSI6ICIiLA0KICAiYWxwbiI6ICIiDQp9

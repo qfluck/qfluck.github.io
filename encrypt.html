@@ -125,7 +125,7 @@
 
   async function decryptText() {
     const key = document.getElementById('key').value;
-    const encryptedText = document.getElementById('encryptedText').value;
+    const encryptedText = document.getElementById('originalText').value;
 
     if (!validateInput(key, encryptedText)) {
       return;

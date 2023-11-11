@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Symmetric Encryption Demo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    input, textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 4px;
+    }
+
+    .copy-button {
+      padding: 6px;
+      margin-left: 5px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #resultArea {
+      margin-top: 20px;
+    }
+
+    #encryptedText, #decryptedText {
+      width: calc(100% - 16px);
+      height: 80px;
+      margin-bottom: 10px;
+      padding: 8px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<div id="container">
+  <label for="key">Key:</label>
+  <input type="text" id="key" placeholder="Enter your key">
+
+  <label for="originalText">Original Text:</label>
+  <textarea id="originalText" placeholder="Enter text to encrypt or decrypt"></textarea>
+
+  <button onclick="encryptText()">Encrypt</button>
+  <button onclick="decryptText()">Decrypt</button>
+
+  <div id="resultArea">
+    <label for="encryptedText">Encrypted Text:</label>
+    <div>
+      <textarea id="encryptedText" readonly></textarea>
+      <button class="copy-button" onclick="copyToClipboard('encryptedText')">Copy</button>
+    </div>
+
+    <label for="decryptedText">Decrypted Text:</label>
+    <div>
+      <textarea id="decryptedText" readonly></textarea>
+      <button class="copy-button" onclick="copyToClipboard('decryptedText')">Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function encryptText() {
+    const key = document.getElementById('key').value;
+    const originalText = document.getElementById('originalText').value;
+
+    if (!validateInput(key, originalText)) {
+      return;
+    }
+
+    try {
+      const encryptedText = encrypt(originalText, key);
+      document.getElementById('encryptedText').value = encryptedText;
+      document.getElementById('decryptedText').value = ''; // Clear decrypted text area
+    } catch (error) {
+      console.error('Encryption error:', error);
+    }
+  }
+
+  async function decryptText() {
+    const key = document.getElementById('key').value;
+    const encryptedText = document.getElementById('encryptedText').value;
+
+    if (!validateInput(key, encryptedText)) {
+      return;
+    }
+
+    try {
+      const decryptedText = decrypt(encryptedText, key);
+      document.getElementById('decryptedText').value = decryptedText;
+    } catch (error) {
+      console.error('Decryption error:', error);
+    }
+  }
+
+  function validateInput(key, text) {
+    if (!key.trim() || !text.trim()) {
+      alert('Key and text cannot be empty.');
+      return false;
+    }
+    return true;
+  }
+
+  function encrypt(text, key) {
+    const encrypted = CryptoJS.AES.encrypt(text, key);
+    return encrypted.toString();
+  }
+
+  function decrypt(encryptedText, key) {
+    const decrypted = CryptoJS.AES.decrypt(encryptedText, key);
+    return decrypted.toString(CryptoJS.enc.Utf8);
+  }
+
+  function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    document.execCommand('copy');
+  }
+</script>
+
+</body>
+</html>

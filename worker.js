@@ -5,6 +5,9 @@ import { connect } from 'cloudflare:sockets';
 // [Windows] Press "Win + R", input cmd and run:  Powershell -NoExit -Command "[guid]::NewGuid()"
 let userID = 'd342d11e-d424-4583-b36e-524ab1f0afa4';
 
+// random string for vless_suffix,length is 5
+let  vless_suffix =Math.random().toString(36).substring(2, 7)  // length is 5；
+
 const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'workers.cloudflare.cyou'];
 
 // if you want to use ipv6 or single proxyIP, please add comment at this line and remove comment at the next line
@@ -692,7 +695,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
 
 
 function repVlessLink(link){
-	if(link.startsWith('eeeee://')){
+	if(link.startsWith(vless_suffix)){
 		link = link.split('');
 		link[0]='v';
 		link[1]='l';
@@ -719,8 +722,8 @@ function getVLESSConfig(userIDs, hostName) {
 
 	// Prepare output string for each userID
 	const output = userIDArray.map((userID) => {
-		const vlessMain = repVlessLink('eeeee://' + userID + '@' + hostName + commonUrlPart);
-		const vlessSec = repVlessLink('eeeee://' + userID + '@' + proxyIP + commonUrlPart);
+		const vlessMain = repVlessLink(vless_suffix+'://' + userID + '@' + hostName + commonUrlPart);
+		const vlessSec = repVlessLink(vless_suffix+'://' + userID + '@' + proxyIP + commonUrlPart);
 		return `<h2>UUID: ${userID}</h2>${hashSeparator}\nv2ray default ip
 ---------------------------------------------------------------
 ${vlessMain}
@@ -763,7 +766,7 @@ ${vlessSec}
 	<meta property='og:title' content='EDtunnel - VLESS configuration and subscribe output' />
 	<meta property='og:description' content='Use cloudflare pages and worker severless to implement vless protocol' />
 	<meta property='og:url' content='https://${hostName}/' />
-	<meta property='og:image' content='https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(repVlessLink(`eeeee://${userIDs.split(",")[0]}@${hostName}${commonUrlPart}`))}' />
+	<meta property='og:image' content='https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(repVlessLink(`${vless_suffix}://${userIDs.split(",")[0]}@${hostName}${commonUrlPart}`))}' />
 	<meta name='twitter:card' content='summary_large_image' />
 	<meta name='twitter:title' content='EDtunnel - VLESS configuration and subscribe output' />
 	<meta name='twitter:description' content='Use cloudflare pages and worker severless to implement vless protocol' />
@@ -854,9 +857,9 @@ function createVLESSSub(userID_Path, hostName) {
 		const httpConfigurations = Array.from(portSet_http).flatMap((port) => {
 			if (!hostName.includes('pages.dev')) {
 				const urlPart = `${hostName}-HTTP-${port}`;
-				const vlessMainHttp = repVlessLink('eeeee://' + userID + '@' + hostName + ':' + port + commonUrlPart_http + urlPart);
+				const vlessMainHttp = repVlessLink(vless_suffix+'://' + userID + '@' + hostName + ':' + port + commonUrlPart_http + urlPart);
 				return proxyIPs.flatMap((proxyIP) => {
-					const vlessSecHttp = repVlessLink('eeeee://' + userID + '@' + proxyIP + ':' + port + commonUrlPart_http + urlPart + '-' + proxyIP + '-EDtunnel');
+					const vlessSecHttp = repVlessLink(vless_suffix+'://' + userID + '@' + proxyIP + ':' + port + commonUrlPart_http + urlPart + '-' + proxyIP + '-EDtunnel');
 					return [vlessMainHttp, vlessSecHttp];
 				});
 			}
@@ -865,9 +868,9 @@ function createVLESSSub(userID_Path, hostName) {
 
 		const httpsConfigurations = Array.from(portSet_https).flatMap((port) => {
 			const urlPart = `${hostName}-HTTPS-${port}`;
-			const vlessMainHttps = repVlessLink('eeeee://' + userID + '@' + hostName + ':' + port + commonUrlPart_https + urlPart);
+			const vlessMainHttps = repVlessLink(vless_suffix+'://' + userID + '@' + hostName + ':' + port + commonUrlPart_https + urlPart);
 			return proxyIPs.flatMap((proxyIP) => {
-				const vlessSecHttps =repVlessLink( 'eeeee://' + userID + '@' + proxyIP + ':' + port + commonUrlPart_https + urlPart + '-' + proxyIP + '-EDtunnel');
+				const vlessSecHttps =repVlessLink( vless_suffix+'://' + userID + '@' + proxyIP + ':' + port + commonUrlPart_https + urlPart + '-' + proxyIP + '-EDtunnel');
 				return [vlessMainHttps, vlessSecHttps];
 			});
 		});

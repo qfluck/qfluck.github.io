@@ -1,10 +1,16 @@
 // src/worker.js
 import { connect } from "cloudflare:sockets";
+
 const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'workers.cloudflare.cyou'];
 
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
-let sha224Password = '08f32643dbdacf81d0d511f1ee24b06de759e90f8edf742bbdc57d88';
+//  plain password
+let plainPass='root';
+//  sha224 crop password
+//  generate sha224   https://www.atatus.com/tools/sha224-to-hash 
+let sha224Password = '871ce144069ea0816545f52f09cd135d1182262c3b235808fa5a3281';
+
 
 const worker_default = {
    /**
@@ -22,7 +28,7 @@ const worker_default = {
                switch (url.pathname) {
                    case "/link":
                        const host = request.headers.get('Host');
-                       return new Response(`trojan://ca110us@${host}:443/?type=ws&host=${host}&security=tls`, {
+                       return new Response(`trojan://${plainPass}@${host}:443/?type=ws&host=${host}&security=tls#${host}`, {
                            status: 200,
                            headers: {
                                "Content-Type": "text/plain;charset=utf-8",
@@ -327,6 +333,7 @@ function safeCloseWebSocket(socket) {
        console.error("safeCloseWebSocket error", error);
   }
 }
+
 export {
    worker_default as
    default

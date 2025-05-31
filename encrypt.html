@@ -1,168 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Symmetric Encryption Demo</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    #container {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-
-    input, textarea {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-
-    button {
-      padding: 10px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      border-radius: 4px;
-    }
-
-    .copy-button {
-      padding: 6px;
-      margin-left: 5px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    #resultArea {
-      margin-top: 20px;
-    }
-
-    #encryptedText, #decryptedText {
-      width: calc(100% - 16px);
-      height: 80px;
-      margin-bottom: 10px;
-      padding: 8px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-      display: inline-block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetric Encryption Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style for the message box */
+        .message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            pointer-events: none; /* Allow clicks through when hidden */
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .message-box.success {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        .message-box.error {
+            background-color: #f44336; /* Red */
+            color: white;
+        }
+        /* Ensure textareas are resizable vertically only */
+        textarea {
+            resize: vertical;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4 selection:bg-sky-300 selection:text-sky-900">
 
-<div id="container">
-  <label for="key">Key:</label>
-  <input type="text" id="key" placeholder="Enter your key">
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-2xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800">Symmetric Encryption Tool</h1>
+            <p class="text-sm text-slate-600 mt-1">AES Encryption & Decryption</p>
+        </header>
 
-  <label for="originalText">Original Text:</label>
-  <textarea id="originalText" placeholder="Enter text to encrypt or decrypt"></textarea>
+        <div class="mb-6">
+            <label for="encryptionKey" class="block text-sm font-semibold text-slate-700 mb-1">Encryption/Decryption Key:</label>
+            <input type="password" id="encryptionKey" placeholder="Enter your secret key"
+                   class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out">
+            <p class="text-xs text-slate-500 mt-1">Keep this key secret. It's used for both encryption and decryption.</p>
+        </div>
 
-  <button onclick="encryptText()">Encrypt</button>
-  <button onclick="decryptText()">Decrypt</button>
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <div class="space-y-3">
+                <label for="plainText" class="block text-sm font-semibold text-slate-700">Plain Text:</label>
+                <textarea id="plainText" rows="6" placeholder="Enter text to encrypt..."
+                          class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out"></textarea>
+                <div class="flex space-x-2">
+                    <button onclick="handleEncrypt()"
+                            class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50">
+                        Encrypt
+                    </button>
+                    <button onclick="copyToClipboard('plainText', 'Plain Text')"
+                            class="w-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-50">
+                        Copy
+                    </button>
+                </div>
+            </div>
 
-  <div id="resultArea">
-    <label for="encryptedText">Encrypted Text:</label>
-    <div>
-      <textarea id="encryptedText" readonly></textarea>
-      <button class="copy-button" onclick="copyToClipboard('encryptedText')">Copy</button>
+            <div class="space-y-3">
+                <label for="encryptedText" class="block text-sm font-semibold text-slate-700">Encrypted Text (Ciphertext):</label>
+                <textarea id="encryptedText" rows="6" placeholder="Enter text to decrypt or see encrypted output..."
+                          class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out"></textarea>
+                <div class="flex space-x-2">
+                    <button onclick="handleDecrypt()"
+                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50">
+                        Decrypt
+                    </button>
+                    <button onclick="copyToClipboard('encryptedText', 'Encrypted Text')"
+                            class="w-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-50">
+                        Copy
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="messagePopup" class="message-box"></div>
+
+        <footer class="text-center mt-8">
+            <p class="text-xs text-slate-500">Using AES (Advanced Encryption Standard) via CryptoJS.</p>
+        </footer>
     </div>
-
-    <label for="decryptedText">Decrypted Text:</label>
-    <div>
-      <textarea id="decryptedText" readonly></textarea>
-      <button class="copy-button" onclick="copyToClipboard('decryptedText')">Copy</button>
-    </div>
-  </div>
-</div>
 
 <script>
-  async function encryptText() {
-    const key = document.getElementById('key').value;
-    const originalText = document.getElementById('originalText').value;
+    // Get DOM elements
+    const keyInput = document.getElementById('encryptionKey');
+    const plainTextInput = document.getElementById('plainText');
+    const encryptedTextInput = document.getElementById('encryptedText');
+    const messagePopup = document.getElementById('messagePopup');
+    let messageTimeout; // To manage the timeout for hiding messages
 
-    if (!validateInput(key, originalText)) {
-      return;
+    /**
+     * Displays a message in the message popup.
+     * @param {string} text - The message text.
+     * @param {string} type - 'success' or 'error'.
+     * @param {number} duration - How long to show the message in milliseconds.
+     */
+    function showMessage(text, type = 'success', duration = 3000) {
+        // Clear any existing timeout
+        if (messageTimeout) {
+            clearTimeout(messageTimeout);
+        }
+
+        messagePopup.textContent = text;
+        messagePopup.className = `message-box ${type} show`; // Apply type and show classes
+
+        // Set timeout to hide the message
+        messageTimeout = setTimeout(() => {
+            messagePopup.classList.remove('show');
+            // Optional: Reset class after transition
+            setTimeout(() => {
+                if (!messagePopup.classList.contains('show')) { // Check if it wasn't shown again quickly
+                     messagePopup.className = 'message-box';
+                }
+            }, 300); // Match transition duration
+        }, duration);
     }
 
-    try {
-      const encryptedText = encrypt(originalText, key);
-      document.getElementById('encryptedText').value = encryptedText;
-      document.getElementById('decryptedText').value = ''; // Clear decrypted text area
-    } catch (error) {
-      console.error('Encryption error:', error);
+    /**
+     * Validates key and text inputs.
+     * @param {string} key - The encryption/decryption key.
+     * @param {string} text - The text to be processed.
+     * @param {string} fieldName - Name of the text field for error messages.
+     * @returns {boolean} - True if valid, false otherwise.
+     */
+    function validateInput(key, text, fieldName = "Text") {
+        if (!key.trim()) {
+            showMessage('Encryption key cannot be empty.', 'error');
+            keyInput.focus();
+            return false;
+        }
+        if (!text.trim()) {
+            showMessage(`${fieldName} cannot be empty.`, 'error');
+            if (fieldName === "Plain Text") plainTextInput.focus();
+            else encryptedTextInput.focus();
+            return false;
+        }
+        return true;
     }
-  }
 
-  async function decryptText() {
-    const key = document.getElementById('key').value;
-    const encryptedText = document.getElementById('originalText').value;
-
-    if (!validateInput(key, encryptedText)) {
-      return;
+    /**
+     * Encrypts text using AES.
+     * @param {string} text - The plain text to encrypt.
+     * @param {string} key - The encryption key.
+     * @returns {string|null} - Encrypted string or null on error.
+     */
+    function encrypt(text, key) {
+        try {
+            const encrypted = CryptoJS.AES.encrypt(text, key);
+            return encrypted.toString();
+        } catch (error) {
+            console.error('Encryption error:', error);
+            showMessage('Encryption failed. Check console for details.', 'error');
+            return null;
+        }
     }
 
-    try {
-      const decryptedText = decrypt(encryptedText, key);
-      document.getElementById('decryptedText').value = decryptedText;
-    } catch (error) {
-      console.error('Decryption error:', error);
+    /**
+     * Decrypts text using AES.
+     * @param {string} encryptedText - The ciphertext to decrypt.
+     * @param {string} key - The decryption key.
+     * @returns {string|null} - Decrypted string or null on error (e.g., wrong key).
+     */
+    function decrypt(encryptedText, key) {
+        try {
+            const decrypted = CryptoJS.AES.decrypt(encryptedText, key);
+            const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
+            if (!decryptedText) { // Handles cases where decryption results in an empty string (often due to wrong key)
+                showMessage('Decryption failed. This might be due to an incorrect key or corrupted data.', 'error');
+                return null;
+            }
+            return decryptedText;
+        } catch (error) {
+            console.error('Decryption error:', error);
+            showMessage('Decryption failed. Check console for details or if the key is correct.', 'error');
+            return null;
+        }
     }
-  }
 
-  function validateInput(key, text) {
-    if (!key.trim() || !text.trim()) {
-      alert('Key and text cannot be empty.');
-      return false;
+    /**
+     * Handles the encryption process.
+     */
+    function handleEncrypt() {
+        const key = keyInput.value;
+        const originalText = plainTextInput.value;
+
+        if (!validateInput(key, originalText, "Plain Text")) {
+            return;
+        }
+
+        const encryptedResult = encrypt(originalText, key);
+        if (encryptedResult !== null) {
+            encryptedTextInput.value = encryptedResult;
+            showMessage('Text encrypted successfully!', 'success');
+        }
     }
-    return true;
-  }
 
-  function encrypt(text, key) {
-    const encrypted = CryptoJS.AES.encrypt(text, key);
-    return encrypted.toString();
-  }
+    /**
+     * Handles the decryption process.
+     */
+    function handleDecrypt() {
+        const key = keyInput.value;
+        const textToDecrypt = encryptedTextInput.value; // Decrypt from the "Encrypted Text" field
 
-  function decrypt(encryptedText, key) {
-    const decrypted = CryptoJS.AES.decrypt(encryptedText, key);
-    return decrypted.toString(CryptoJS.enc.Utf8);
-  }
+        if (!validateInput(key, textToDecrypt, "Encrypted Text")) {
+            return;
+        }
 
-  function copyToClipboard(elementId) {
-    const element = document.getElementById(elementId);
-    element.select();
-    document.execCommand('copy');
-  }
+        const decryptedResult = decrypt(textToDecrypt, key);
+        if (decryptedResult !== null) {
+            plainTextInput.value = decryptedResult; // Output to "Plain Text" field
+            showMessage('Text decrypted successfully!', 'success');
+        }
+    }
+
+    /**
+     * Copies text from a specified textarea to the clipboard.
+     * @param {string} elementId - The ID of the textarea.
+     * @param {string} fieldName - The name of the field being copied (for messages).
+     */
+    function copyToClipboard(elementId, fieldName) {
+        const element = document.getElementById(elementId);
+        if (!element.value.trim()) {
+            showMessage(`${fieldName} is empty. Nothing to copy.`, 'error', 2000);
+            return;
+        }
+        // Modern clipboard API (preferred, but might have permission issues in some iframe contexts)
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(element.value)
+                .then(() => {
+                    showMessage(`${fieldName} copied to clipboard!`, 'success', 2000);
+                })
+                .catch(err => {
+                    console.warn('Async clipboard copy failed, falling back to execCommand:', err);
+                    // Fallback for browsers/contexts where navigator.clipboard.writeText might fail
+                    fallbackCopyToClipboard(element, fieldName);
+                });
+        } else {
+            // Fallback for older browsers or restricted contexts
+            fallbackCopyToClipboard(element, fieldName);
+        }
+    }
+
+    /**
+     * Fallback method to copy text to clipboard using document.execCommand.
+     * @param {HTMLTextAreaElement} element - The textarea element.
+     * @param {string} fieldName - The name of the field being copied.
+     */
+    function fallbackCopyToClipboard(element, fieldName) {
+        element.select(); // Select the text
+        element.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showMessage(`${fieldName} copied to clipboard! (fallback method)`, 'success', 2000);
+            } else {
+                showMessage('Failed to copy text using fallback method.', 'error');
+            }
+        } catch (err) {
+            console.error('Fallback copy to clipboard failed:', err);
+            showMessage('Could not copy text. Please copy manually.', 'error');
+        }
+        // Deselect the text
+        window.getSelection().removeAllRanges();
+    }
+
 </script>
-
 </body>
 </html>

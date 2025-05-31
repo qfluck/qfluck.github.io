@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetric Encryption Tool</title>
+    <title>Symmetric Encryption Tool - Algorithm Choice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -49,7 +49,7 @@
     <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-2xl">
         <header class="mb-8 text-center">
             <h1 class="text-3xl font-bold text-slate-800">Symmetric Encryption Tool</h1>
-            <p class="text-sm text-slate-600 mt-1">AES Encryption & Decryption</p>
+            <p class="text-sm text-slate-600 mt-1">Choose your algorithm, encrypt & decrypt.</p>
         </header>
 
         <div class="mb-6">
@@ -58,6 +58,19 @@
                    class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out">
             <p class="text-xs text-slate-500 mt-1">Keep this key secret. It's used for both encryption and decryption.</p>
         </div>
+
+        <div class="mb-6">
+            <label for="encryptionAlgorithm" class="block text-sm font-semibold text-slate-700 mb-1">Encryption Method:</label>
+            <select id="encryptionAlgorithm"
+                    class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out">
+                <option value="AES" selected>AES (Advanced Encryption Standard)</option>
+                <option value="DES">DES (Data Encryption Standard)</option>
+                <option value="TripleDES">TripleDES (3DES)</option>
+                <option value="Rabbit">Rabbit (Stream Cipher)</option>
+                <option value="RC4">RC4 (Stream Cipher)</option>
+            </select>
+        </div>
+
 
         <div class="grid md:grid-cols-2 gap-6 mb-6">
             <div class="space-y-3">
@@ -96,7 +109,7 @@
         <div id="messagePopup" class="message-box"></div>
 
         <footer class="text-center mt-8">
-            <p class="text-xs text-slate-500">Using AES (Advanced Encryption Standard) via CryptoJS.</p>
+            <p class="text-xs text-slate-500">Utilizing various symmetric encryption algorithms via CryptoJS.</p>
         </footer>
     </div>
 
@@ -105,6 +118,7 @@
     const keyInput = document.getElementById('encryptionKey');
     const plainTextInput = document.getElementById('plainText');
     const encryptedTextInput = document.getElementById('encryptedText');
+    const algorithmSelect = document.getElementById('encryptionAlgorithm');
     const messagePopup = document.getElementById('messagePopup');
     let messageTimeout; // To manage the timeout for hiding messages
 
@@ -115,23 +129,18 @@
      * @param {number} duration - How long to show the message in milliseconds.
      */
     function showMessage(text, type = 'success', duration = 3000) {
-        // Clear any existing timeout
         if (messageTimeout) {
             clearTimeout(messageTimeout);
         }
-
         messagePopup.textContent = text;
-        messagePopup.className = `message-box ${type} show`; // Apply type and show classes
-
-        // Set timeout to hide the message
+        messagePopup.className = `message-box ${type} show`;
         messageTimeout = setTimeout(() => {
             messagePopup.classList.remove('show');
-            // Optional: Reset class after transition
             setTimeout(() => {
-                if (!messagePopup.classList.contains('show')) { // Check if it wasn't shown again quickly
+                if (!messagePopup.classList.contains('show')) {
                      messagePopup.className = 'message-box';
                 }
-            }, 300); // Match transition duration
+            }, 300);
         }, duration);
     }
 
@@ -158,40 +167,82 @@
     }
 
     /**
-     * Encrypts text using AES.
+     * Encrypts text using the selected algorithm.
      * @param {string} text - The plain text to encrypt.
      * @param {string} key - The encryption key.
+     * @param {string} algorithm - The selected encryption algorithm ('AES', 'DES', 'TripleDES', 'Rabbit', 'RC4').
      * @returns {string|null} - Encrypted string or null on error.
      */
-    function encrypt(text, key) {
+    function encrypt(text, key, algorithm) {
         try {
-            const encrypted = CryptoJS.AES.encrypt(text, key);
+            let encrypted;
+            switch (algorithm) {
+                case 'AES':
+                    encrypted = CryptoJS.AES.encrypt(text, key);
+                    break;
+                case 'DES':
+                    encrypted = CryptoJS.DES.encrypt(text, key);
+                    break;
+                case 'TripleDES':
+                    encrypted = CryptoJS.TripleDES.encrypt(text, key);
+                    break;
+                case 'Rabbit':
+                    encrypted = CryptoJS.Rabbit.encrypt(text, key);
+                    break;
+                case 'RC4':
+                    encrypted = CryptoJS.RC4.encrypt(text, key);
+                    break;
+                default:
+                    showMessage('Invalid encryption algorithm selected.', 'error');
+                    return null;
+            }
             return encrypted.toString();
         } catch (error) {
-            console.error('Encryption error:', error);
-            showMessage('Encryption failed. Check console for details.', 'error');
+            console.error(`Encryption error with ${algorithm}:`, error);
+            showMessage(`Encryption failed using ${algorithm}. Check console for details.`, 'error');
             return null;
         }
     }
 
     /**
-     * Decrypts text using AES.
+     * Decrypts text using the selected algorithm.
      * @param {string} encryptedText - The ciphertext to decrypt.
      * @param {string} key - The decryption key.
-     * @returns {string|null} - Decrypted string or null on error (e.g., wrong key).
+     * @param {string} algorithm - The selected encryption algorithm.
+     * @returns {string|null} - Decrypted string or null on error.
      */
-    function decrypt(encryptedText, key) {
+    function decrypt(encryptedText, key, algorithm) {
         try {
-            const decrypted = CryptoJS.AES.decrypt(encryptedText, key);
+            let decrypted;
+            switch (algorithm) {
+                case 'AES':
+                    decrypted = CryptoJS.AES.decrypt(encryptedText, key);
+                    break;
+                case 'DES':
+                    decrypted = CryptoJS.DES.decrypt(encryptedText, key);
+                    break;
+                case 'TripleDES':
+                    decrypted = CryptoJS.TripleDES.decrypt(encryptedText, key);
+                    break;
+                case 'Rabbit':
+                    decrypted = CryptoJS.Rabbit.decrypt(encryptedText, key);
+                    break;
+                case 'RC4':
+                    decrypted = CryptoJS.RC4.decrypt(encryptedText, key);
+                    break;
+                default:
+                    showMessage('Invalid decryption algorithm selected.', 'error');
+                    return null;
+            }
             const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
-            if (!decryptedText) { // Handles cases where decryption results in an empty string (often due to wrong key)
-                showMessage('Decryption failed. This might be due to an incorrect key or corrupted data.', 'error');
+            if (!decryptedText && encryptedText) { // Check if decryption resulted in empty string but input was not empty
+                showMessage(`Decryption failed with ${algorithm}. This might be due to an incorrect key or corrupted data.`, 'error');
                 return null;
             }
             return decryptedText;
         } catch (error) {
-            console.error('Decryption error:', error);
-            showMessage('Decryption failed. Check console for details or if the key is correct.', 'error');
+            console.error(`Decryption error with ${algorithm}:`, error);
+            showMessage(`Decryption failed using ${algorithm}. Check console or if the key is correct.`, 'error');
             return null;
         }
     }
@@ -202,15 +253,16 @@
     function handleEncrypt() {
         const key = keyInput.value;
         const originalText = plainTextInput.value;
+        const selectedAlgorithm = algorithmSelect.value;
 
         if (!validateInput(key, originalText, "Plain Text")) {
             return;
         }
 
-        const encryptedResult = encrypt(originalText, key);
+        const encryptedResult = encrypt(originalText, key, selectedAlgorithm);
         if (encryptedResult !== null) {
             encryptedTextInput.value = encryptedResult;
-            showMessage('Text encrypted successfully!', 'success');
+            showMessage(`Text encrypted successfully using ${selectedAlgorithm}!`, 'success');
         }
     }
 
@@ -219,16 +271,17 @@
      */
     function handleDecrypt() {
         const key = keyInput.value;
-        const textToDecrypt = encryptedTextInput.value; // Decrypt from the "Encrypted Text" field
+        const textToDecrypt = encryptedTextInput.value;
+        const selectedAlgorithm = algorithmSelect.value;
 
         if (!validateInput(key, textToDecrypt, "Encrypted Text")) {
             return;
         }
 
-        const decryptedResult = decrypt(textToDecrypt, key);
+        const decryptedResult = decrypt(textToDecrypt, key, selectedAlgorithm);
         if (decryptedResult !== null) {
-            plainTextInput.value = decryptedResult; // Output to "Plain Text" field
-            showMessage('Text decrypted successfully!', 'success');
+            plainTextInput.value = decryptedResult;
+            showMessage(`Text decrypted successfully using ${selectedAlgorithm}!`, 'success');
         }
     }
 
@@ -243,7 +296,6 @@
             showMessage(`${fieldName} is empty. Nothing to copy.`, 'error', 2000);
             return;
         }
-        // Modern clipboard API (preferred, but might have permission issues in some iframe contexts)
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(element.value)
                 .then(() => {
@@ -251,11 +303,9 @@
                 })
                 .catch(err => {
                     console.warn('Async clipboard copy failed, falling back to execCommand:', err);
-                    // Fallback for browsers/contexts where navigator.clipboard.writeText might fail
                     fallbackCopyToClipboard(element, fieldName);
                 });
         } else {
-            // Fallback for older browsers or restricted contexts
             fallbackCopyToClipboard(element, fieldName);
         }
     }
@@ -266,9 +316,8 @@
      * @param {string} fieldName - The name of the field being copied.
      */
     function fallbackCopyToClipboard(element, fieldName) {
-        element.select(); // Select the text
-        element.setSelectionRange(0, 99999); // For mobile devices
-
+        element.select();
+        element.setSelectionRange(0, 99999);
         try {
             const successful = document.execCommand('copy');
             if (successful) {
@@ -280,7 +329,6 @@
             console.error('Fallback copy to clipboard failed:', err);
             showMessage('Could not copy text. Please copy manually.', 'error');
         }
-        // Deselect the text
         window.getSelection().removeAllRanges();
     }
 

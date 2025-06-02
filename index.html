@@ -8,16 +8,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <style>
-        /* 为卡片添加一个平滑的过渡效果 */
+        /* Custom styles for card hover effect */
         .card-link {
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
         .card-link:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            transform: translateY(-5px); /* Lift card on hover */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* Add a more pronounced shadow */
         }
     </style>
 </head>
@@ -93,23 +93,25 @@
     </div>
 
 <script>
+// Wait for the DOM to be fully loaded before executing jQuery code
 $(document).ready(function() {
-    // 动态更新时间和问候语的函数
+    // Function to update time and greeting dynamically
     function updateTime() {
         const now = new Date();
         const year = now.getFullYear();
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
         const date = now.getDate().toString().padStart(2, '0');
         const hours = now.getHours();
         const minutes = now.getMinutes().toString().padStart(2, '0');
         const seconds = now.getSeconds().toString().padStart(2, '0');
         const dayOfWeek = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][now.getDay()];
 
-        // 更新日期时间显示
+        // Update the datetime display
         $('#datetime').text(`${year}-${month}-${date} ${hours}:${minutes}:${seconds} ${dayOfWeek}`);
+        // Update the current year in the footer
         $('#currentYear').text(year);
 
-        // 根据小时更新问候语
+        // Update greeting based on the current hour
         let greetingText = '';
         if (hours >= 5 && hours < 12) {
             greetingText = '早上好!';
@@ -117,16 +119,16 @@ $(document).ready(function() {
             greetingText = '中午好!';
         } else if (hours >= 14 && hours < 18) {
             greetingText = '下午好!';
-        } else {
+        } else { // Covers 18:00 to 04:59
             greetingText = '晚上好!';
         }
         $('#greeting').text(greetingText);
     }
 
-    // 页面加载时立即执行一次
+    // Call updateTime immediately on page load
     updateTime();
 
-    // 每秒钟更新一次时间
+    // Set an interval to update the time every second
     setInterval(updateTime, 1000);
 });
 </script>

@@ -3,49 +3,61 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VLESS 链接批量生成工具</title>
+    <title id="pageTitle">VLESS 链接批量生成工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 自定义字体 (可选) */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
         }
-        /* 简单的加载动画 */
         .loader {
-            border: 4px solid #f3f3f3; /* Light grey */
-            border-top: 4px solid #3498db; /* Blue */
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
             border-radius: 50%;
             width: 24px;
             height: 24px;
             animation: spin 1s linear infinite;
-            display: inline-block; /* 使其可以和文本在同一行 */
-            margin-left: 10px; /* 和按钮保持一些距离 */
+            display: inline-block;
+            margin-left: 10px;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* 隐藏滚动条但允许滚动 (针对结果文本域) */
-        #resultsOutput::-webkit-scrollbar {
-            display: none;
+        #resultsOutput::-webkit-scrollbar { display: none; }
+        #resultsOutput { -ms-overflow-style: none; scrollbar-width: none; }
+        .lang-button {
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        #resultsOutput {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+        .lang-button.active {
+            background-color: #3b82f6; /* Tailwind blue-500 */
+            color: white;
+            font-weight: 600;
+        }
+        .lang-button:not(.active):hover {
+            background-color: #e5e7eb; /* Tailwind gray-200 */
         }
     </style>
 </head>
 <body class="bg-slate-100 flex flex-col items-center justify-center min-h-screen p-4 selection:bg-sky-300 selection:text-sky-900">
 
     <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-2xl">
+        <!-- Language Switcher -->
+        <div class="mb-4 flex justify-end space-x-2">
+            <button id="langZhButton" class="lang-button" data-lang="zh">中文</button>
+            <button id="langEnButton" class="lang-button" data-lang="en">English</button>
+        </div>
+
         <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-slate-800">VLESS 链接批量生成器</h1>
-            <p class="text-sm text-slate-600 mt-1">输入您的 VLESS 链接，我们将使用优选IP批量生成新链接。</p>
+            <h1 id="headerTitle" class="text-3xl font-bold text-slate-800">VLESS 链接批量生成器</h1>
+            <p id="headerSubtitle" class="text-sm text-slate-600 mt-1">输入您的 VLESS 链接，我们将使用优选IP批量生成新链接。</p>
         </header>
 
         <div class="mb-6">
-            <label for="vlessInput" class="block text-sm font-semibold text-slate-700 mb-1">VLESS 链接:</label>
-            <input type="text" id="vlessInput" placeholder="例如: vless://uuid@example.com:443?params#name"
+            <label for="vlessInput" id="vlessLinkLabel" class="block text-sm font-semibold text-slate-700 mb-1">VLESS 链接:</label>
+            <input type="text" id="vlessInput" 
                    class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out" />
         </div>
 
@@ -55,13 +67,13 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 0 0 2.25-2.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v2.25A2.25 2.25 0 0 0 6 10.5Zm0 9.75h2.25A2.25 2.25 0 0 0 10.5 18v-2.25a2.25 2.25 0 0 0-2.25-2.25H6a2.25 2.25 0 0 0-2.25 2.25V18A2.25 2.25 0 0 0 6 20.25Z" />
                 </svg>
-                生成链接
+                <span id="generateButtonText">生成链接</span>
             </button>
             <div id="loadingIndicator" class="loader hidden"></div>
         </div>
 
         <div id="resultsContainer" class="mb-6 hidden">
-            <label for="resultsOutput" class="block text-sm font-semibold text-slate-700 mb-1">生成的链接:</label>
+            <label for="resultsOutput" id="resultsLabel" class="block text-sm font-semibold text-slate-700 mb-1">生成的链接:</label>
             <textarea id="resultsOutput" rows="8" readonly
                       class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out"></textarea>
             <button id="copyAllButton"
@@ -69,14 +81,16 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
                 </svg>
-                复制所有结果
+                <span id="copyAllButtonText">复制所有结果</span>
             </button>
         </div>
 
         <div id="messageArea" class="text-sm text-center"></div>
 
         <footer class="text-center mt-8">
-            <p class="text-xs text-slate-500">IP列表来源: <a href="https://ip.164746.xyz/ipTop10.html" target="_blank" rel="noopener noreferrer" class="text-sky-600 hover:underline">ip.164746.xyz</a></p>
+            <p class="text-xs text-slate-500">
+                <span id="ipSourceText">IP列表来源</span>: <a href="https://ip.164746.xyz/ipTop10.html" target="_blank" rel="noopener noreferrer" class="text-sky-600 hover:underline">ip.164746.xyz</a>
+            </p>
         </footer>
     </div>
 
@@ -88,76 +102,171 @@
         const resultsOutputElement = document.getElementById('resultsOutput');
         const copyAllButtonElement = document.getElementById('copyAllButton');
         const messageAreaElement = document.getElementById('messageArea');
+        
+        const langZhButton = document.getElementById('langZhButton');
+        const langEnButton = document.getElementById('langEnButton');
 
         let ipList = [];
         let isIpListFetched = false;
+        let currentLanguage = 'zh'; // Default language
 
-        // 消息显示函数
-        function showMessage(message, type = 'info') {
-            messageAreaElement.textContent = message;
+        const translations = {
+            en: {
+                pageTitle: "VLESS Link Batch Generator",
+                headerTitle: "VLESS Link Batch Generator",
+                headerSubtitle: "Enter your VLESS link, and we'll generate new links using preferred IPs.",
+                vlessLinkLabel: "VLESS Link:",
+                vlessLinkPlaceholder: "e.g.: vless://uuid@example.com:443?params#name",
+                generateButtonText: "Generate Links",
+                resultsLabel: "Generated Links:",
+                copyAllButtonText: "Copy All Results",
+                ipSourceText: "IP List Source",
+                msgFetchingIpList: "Fetching IP list...",
+                msgIpListSuccess: "IP list fetched successfully!",
+                msgIpListErrorNoValid: "Could not fetch valid IP addresses from the source.",
+                msgIpListErrorFetch: (errMsg) => `Failed to fetch IP list: ${errMsg}. Please check your network or try again later.`,
+                msgErrorVlessInputEmpty: "Please enter a VLESS link.",
+                msgErrorVlessFormat: "VLESS link format seems incorrect. It should start with \"vless://\".",
+                msgErrorIpListNotLoaded: "IP list is not loaded or is empty. Please wait or try fetching again.",
+                msgErrorVlessParse: "Invalid VLESS link. Could not parse. Please check the format.",
+                msgSuccessGeneratedLinks: (count) => `Successfully generated ${count} new links.`,
+                msgErrorNoLinksGenerated: "Failed to generate any valid links. The IP list might be empty or there's an issue with the VLESS link format.",
+                msgInfoNothingToCopy: "Nothing to copy.",
+                msgSuccessCopied: "All links copied to clipboard!",
+                msgErrorCopyFailed: "Copy failed. Please copy manually.",
+            },
+            zh: {
+                pageTitle: "VLESS 链接批量生成工具",
+                headerTitle: "VLESS 链接批量生成器",
+                headerSubtitle: "输入您的 VLESS 链接，我们将使用优选IP批量生成新链接。",
+                vlessLinkLabel: "VLESS 链接:",
+                vlessLinkPlaceholder: "例如: vless://uuid@example.com:443?params#name",
+                generateButtonText: "生成链接",
+                resultsLabel: "生成的链接:",
+                copyAllButtonText: "复制所有结果",
+                ipSourceText: "IP列表来源",
+                msgFetchingIpList: "正在获取IP列表...",
+                msgIpListSuccess: "IP列表获取成功!",
+                msgIpListErrorNoValid: "未能从来源获取有效IP地址。",
+                msgIpListErrorFetch: (errMsg) => `获取IP列表失败: ${errMsg}. 请检查网络连接或稍后再试。`,
+                msgErrorVlessInputEmpty: "请输入VLESS链接。",
+                msgErrorVlessFormat: "VLESS链接格式似乎不正确，应以 \"vless://\" 开头。",
+                msgErrorIpListNotLoaded: "IP列表尚未加载或为空，请稍等或重试获取IP列表。",
+                msgErrorVlessParse: "输入的VLESS链接无效，无法解析。请检查格式。",
+                msgSuccessGeneratedLinks: (count) => `成功生成 ${count} 个新链接。`,
+                msgErrorNoLinksGenerated: "未能生成任何有效链接。可能是IP列表为空或VLESS链接格式问题。",
+                msgInfoNothingToCopy: "没有内容可复制。",
+                msgSuccessCopied: "所有链接已复制到剪贴板!",
+                msgErrorCopyFailed: "复制失败，请手动复制。",
+            }
+        };
+
+        function applyTranslations(lang) {
+            currentLanguage = lang;
+            document.documentElement.lang = lang; // Update HTML lang attribute
+            const t = translations[lang];
+
+            document.getElementById('pageTitle').textContent = t.pageTitle;
+            document.getElementById('headerTitle').textContent = t.headerTitle;
+            document.getElementById('headerSubtitle').textContent = t.headerSubtitle;
+            document.getElementById('vlessLinkLabel').textContent = t.vlessLinkLabel;
+            vlessInputElement.placeholder = t.vlessLinkPlaceholder;
+            document.getElementById('generateButtonText').textContent = t.generateButtonText;
+            document.getElementById('resultsLabel').textContent = t.resultsLabel;
+            document.getElementById('copyAllButtonText').textContent = t.copyAllButtonText;
+            document.getElementById('ipSourceText').textContent = t.ipSourceText;
+
+            // Update active button style
+            if (lang === 'zh') {
+                langZhButton.classList.add('active');
+                langEnButton.classList.remove('active');
+            } else {
+                langEnButton.classList.add('active');
+                langZhButton.classList.remove('active');
+            }
+            // If there's a message displayed, re-render it in the new language if possible
+            // This is a simple approach; a more robust way would be to store the message key and params
+            if (messageAreaElement.dataset.messageKey) {
+                 showMessage(messageAreaElement.dataset.messageKey, messageAreaElement.dataset.messageType, JSON.parse(messageAreaElement.dataset.messageParams || '{}'));
+            }
+        }
+
+        function showMessage(messageKey, type = 'info', params = {}) {
+            messageAreaElement.dataset.messageKey = messageKey; // Store key for re-translation
+            messageAreaElement.dataset.messageType = type;
+            messageAreaElement.dataset.messageParams = JSON.stringify(params);
+
+
+            let message = translations[currentLanguage][messageKey];
+            if (typeof message === 'function') {
+                // Pass parameters to the translation function based on expected keys
+                if (params.hasOwnProperty('errMsg')) {
+                    message = message(params.errMsg);
+                } else if (params.hasOwnProperty('count')) {
+                    message = message(params.count);
+                } else {
+                    message = message(); // Call if no specific params expected
+                }
+            }
+            
+            messageAreaElement.textContent = message || `Missing translation for: ${messageKey}`; // Fallback for missing translation
+
             if (type === 'error') {
                 messageAreaElement.className = 'text-sm text-center text-red-600 p-2 bg-red-100 rounded-md';
             } else if (type === 'success') {
                 messageAreaElement.className = 'text-sm text-center text-emerald-600 p-2 bg-emerald-100 rounded-md';
-            } else {
-                messageAreaElement.className = 'text-sm text-center text-slate-600';
+            } else { // info
+                messageAreaElement.className = 'text-sm text-center text-slate-600 p-2 bg-slate-100 rounded-md';
             }
         }
-
-        // 获取IP列表
+        
         async function fetchIpList() {
-            showMessage('正在获取IP列表...', 'info');
+            showMessage('msgFetchingIpList', 'info');
             loadingIndicatorElement.classList.remove('hidden');
             submitButtonElement.disabled = true;
-            const url = "https://ip.164746.xyz/ipTop10.html"; // 您的IP列表URL
+            const url = "https://ip.164746.xyz/ipTop10.html";
             
             try {
-                // 注意：由于浏览器同源策略，直接从前端JS请求外部HTTP资源可能会遇到CORS问题。
-                // 如果遇到CORS问题，您可能需要通过一个允许CORS的代理服务器来获取这些IP。
-                // 这里我们假设该URL是允许跨域请求的，或者您在本地开发时禁用了CORS检查。
                 const response = await fetch(url);
                 if (!response.ok) {
-                    throw new Error(`HTTP错误! 状态: ${response.status}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 const ipsText = await response.text();
-                ipList = ipsText.split(",").map(ip => ip.trim()).filter(ip => ip); // 清理并过滤空IP
+                ipList = ipsText.split(",").map(ip => ip.trim()).filter(ip => ip);
                 
                 if (ipList.length > 0) {
                     isIpListFetched = true;
-                    showMessage('IP列表获取成功!', 'success');
+                    showMessage('msgIpListSuccess', 'success');
                 } else {
-                    showMessage('未能从来源获取有效IP地址。', 'error');
+                    showMessage('msgIpListErrorNoValid', 'error');
                 }
             } catch (error) {
-                console.error("获取IP列表时出错:", error);
-                showMessage(`获取IP列表失败: ${error.message}. 请检查网络连接或稍后再试。`, 'error');
-                ipList = []; // 确保出错时ipList为空
+                console.error("Error fetching IP list:", error);
+                showMessage('msgIpListErrorFetch', 'error', { errMsg: error.message });
+                ipList = [];
             } finally {
                 loadingIndicatorElement.classList.add('hidden');
                 submitButtonElement.disabled = false;
             }
         }
 
-        // 处理提交
         function handleSubmit() {
             const vlessLink = vlessInputElement.value.trim();
 
             if (!vlessLink) {
-                showMessage('请输入VLESS链接。', 'error');
+                showMessage('msgErrorVlessInputEmpty', 'error');
                 vlessInputElement.focus();
                 return;
             }
 
             if (!vlessLink.toLowerCase().startsWith('vless://')) {
-                showMessage('VLESS链接格式似乎不正确，应以 "vless://" 开头。', 'error');
+                showMessage('msgErrorVlessFormat', 'error');
                 vlessInputElement.focus();
                 return;
             }
 
             if (!isIpListFetched || ipList.length === 0) {
-                showMessage('IP列表尚未加载或为空，请稍等或重试获取IP列表。', 'error');
-                // 可以选择在这里再次触发 fetchIpList()
-                // fetchIpList(); 
+                showMessage('msgErrorIpListNotLoaded', 'error');
                 return;
             }
 
@@ -166,63 +275,62 @@
             try {
                 originalUrl = new URL(vlessLink);
             } catch (e) {
-                showMessage('输入的VLESS链接无效，无法解析。请检查格式。', 'error');
-                console.error("解析VLESS链接失败:", e);
+                showMessage('msgErrorVlessParse', 'error');
+                console.error("Failed to parse VLESS link:", e);
                 return;
             }
 
             ipList.forEach((ip) => {
                 try {
-                    const newVlessUrl = new URL(vlessLink); // 重新基于原始链接创建，避免修改原始URL对象
-                    
-                    // 检查IP是否包含端口号，如果包含，则同时设置hostname和port
+                    const newVlessUrl = new URL(vlessLink); 
                     if (ip.includes(':')) {
                         const [host, port] = ip.split(':');
                         newVlessUrl.hostname = host;
                         newVlessUrl.port = port;
                     } else {
                         newVlessUrl.hostname = ip;
-                        // 保留原始端口或如果原始链接中没有端口，则不设置
-                        // newVlessUrl.port = originalUrl.port || ''; // 如果需要强制使用原始端口
                     }
                     generatedLinks.push(newVlessUrl.toString());
                 } catch (e) {
-                    console.warn(`处理IP "${ip}" 时出错: ${e.message}. 跳过此IP.`);
+                    console.warn(`Error processing IP "${ip}": ${e.message}. Skipping this IP.`);
                 }
             });
 
             if (generatedLinks.length > 0) {
                 resultsOutputElement.value = generatedLinks.join('\n');
                 resultsContainerElement.classList.remove('hidden');
-                showMessage(`成功生成 ${generatedLinks.length} 个新链接。`, 'success');
+                showMessage('msgSuccessGeneratedLinks', 'success', { count: generatedLinks.length });
             } else {
                 resultsContainerElement.classList.add('hidden');
                 resultsOutputElement.value = '';
-                showMessage('未能生成任何有效链接。可能是IP列表为空或VLESS链接格式问题。', 'error');
+                showMessage('msgErrorNoLinksGenerated', 'error');
             }
         }
 
-        // 复制所有结果
         function copyAllResults() {
             if (!resultsOutputElement.value) {
-                showMessage('没有内容可复制。', 'info');
+                showMessage('msgInfoNothingToCopy', 'info');
                 return;
             }
             navigator.clipboard.writeText(resultsOutputElement.value)
                 .then(() => {
-                    showMessage('所有链接已复制到剪贴板!', 'success');
+                    showMessage('msgSuccessCopied', 'success');
                 })
                 .catch(err => {
-                    showMessage('复制失败，请手动复制。', 'error');
-                    console.error('复制到剪贴板失败:', err);
+                    showMessage('msgErrorCopyFailed', 'error');
+                    console.error('Failed to copy to clipboard:', err);
                 });
         }
 
-        // 事件监听
+        // Event Listeners
         submitButtonElement.addEventListener('click', handleSubmit);
         copyAllButtonElement.addEventListener('click', copyAllResults);
+        
+        langZhButton.addEventListener('click', () => applyTranslations('zh'));
+        langEnButton.addEventListener('click', () => applyTranslations('en'));
 
-        // 页面加载时自动获取IP列表
+        // Initial setup
+        applyTranslations(currentLanguage); // Apply default language (Chinese)
         fetchIpList();
 
     </script>

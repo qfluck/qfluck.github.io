@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON 转实体类工具</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+        }
+        /* Custom scrollbar for a cleaner look */
+        textarea::-webkit-scrollbar, pre::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track, pre::-webkit-scrollbar-track {
+            background: #282c34; /* atom-one-dark background */
+        }
+        textarea::-webkit-scrollbar-thumb, pre::-webkit-scrollbar-thumb {
+            background-color: #4f5666;
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover, pre::-webkit-scrollbar-thumb:hover {
+            background-color: #5a6275;
+        }
+        .container-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            height: calc(100vh - 120px); /* Adjust height based on header/footer */
+            gap: 1rem;
+        }
+        @media (min-width: 1024px) {
+            .container-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-white">
+
+    <header class="p-4 bg-gray-900 shadow-md flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-sky-400">JSON 实体类生成器</h1>
+        <div class="flex items-center space-x-4">
+            <div class="relative">
+                <select id="languageSelector" class="bg-gray-700 border border-gray-600 rounded-md py-2 pl-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 appearance-none">
+                    <option value="ts">TypeScript</option>
+                    <option value="java">Java</option>
+                    <option value="python">Python</option>
+                    <option value="csharp">C#</option>
+                </select>
+                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <button id="generateButton" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-md transition duration-200 flex items-center">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2 1M4 7l2-1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" /></svg>
+                生成
+            </button>
+        </div>
+    </header>
+
+    <main class="p-4 container-grid">
+        <!-- JSON Input Panel -->
+        <div class="flex flex-col h-full">
+            <h2 class="text-lg font-semibold mb-2">输入 JSON</h2>
+            <textarea id="jsonInput" class="w-full h-full p-3 bg-gray-900 border border-gray-700 rounded-md resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder='在这里粘贴你的 JSON... 例如: {"user_id": 1, "user_name": "Test"}'></textarea>
+        </div>
+
+        <!-- Code Output Panel -->
+        <div class="flex flex-col h-full relative">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-lg font-semibold">生成代码</h2>
+                <button id="copyButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded-md text-sm transition duration-200 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    复制
+                </button>
+            </div>
+            <pre class="w-full h-full bg-gray-900 border border-gray-700 rounded-md font-mono text-sm overflow-auto"><code id="codeOutput" class="language-typescript p-4 block"></code></pre>
+        </div>
+    </main>
+
+    <div id="messagePopup" class="fixed bottom-5 right-5 bg-red-600 text-white py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-300"></div>
+
+    <script>
+        // DOM Elements
+        const jsonInput = document.getElementById('jsonInput');
+        const codeOutput = document.getElementById('codeOutput');
+        const generateButton = document.getElementById('generateButton');
+        const languageSelector = document.getElementById('languageSelector');
+        const copyButton = document.getElementById('copyButton');
+        const messagePopup = document.getElementById('messagePopup');
+        
+        // --- Utility Functions ---
+        const toCamelCase = (str) => str.replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
+        const toPascalCase = (str) => {
+            const camel = toCamelCase(str);
+            return camel.charAt(0).toUpperCase() + camel.slice(1);
+        };
+        const toSnakeCase = (str) => toCamelCase(str).replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`).replace(/^_/, '');
+        
+        function showMessage(text, duration = 3000) {
+            messagePopup.textContent = text;
+            messagePopup.classList.remove('opacity-0');
+            setTimeout(() => {
+                messagePopup.classList.add('opacity-0');
+            }, duration);
+        }
+
+        function inferType(value, lang) {
+            if (value === null) return lang === 'java' ? 'Object' : (lang === 'python' ? 'Any' : 'any');
+            if (Array.isArray(value)) {
+                const arrayType = value.length > 0 ? inferType(value[0], lang) : (lang === 'java' ? 'Object' : (lang === 'python' ? 'Any' : 'any'));
+                if (lang === 'java') return `List<${toPascalCase(arrayType)}>`;
+                if (lang === 'python') return `List[${toPascalCase(arrayType)}]`;
+                if (lang === 'csharp') return `List<${toPascalCase(arrayType)}>`;
+                return `${arrayType}[]`;
+            }
+            if (typeof value === 'object') return 'object';
+            if (typeof value === 'number') {
+                const typeMap = {
+                    java: Number.isInteger(value) ? 'Integer' : 'Double',
+                    python: Number.isInteger(value) ? 'int' : 'float',
+                    csharp: Number.isInteger(value) ? 'int' : 'double',
+                    ts: 'number'
+                };
+                return typeMap[lang];
+            }
+            if (typeof value === 'boolean') return (lang === 'java' || lang === 'python' || lang === 'csharp') ? 'bool' : 'boolean';
+            return 'string';
+        }
+
+        // --- Class Generation Logic ---
+        function generateClasses(jsonObj, rootClassName, lang) {
+            let classes = {};
+            
+            function buildClass(name, obj) {
+                if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return;
+                const className = toPascalCase(name);
+                if (classes[className]) return;
+
+                let classString = '';
+                const fields = [];
+
+                for (const key in obj) {
+                    const value = obj[key];
+                    let fieldType = inferType(value, lang);
+                    
+                    if (fieldType === 'object') {
+                        const nestedClassName = toPascalCase(key);
+                        fieldType = nestedClassName;
+                        buildClass(nestedClassName, value);
+                    } else if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
+                         const singularKey = key.endsWith('s') ? key.slice(0, -1) : key;
+                         const nestedClassName = toPascalCase(singularKey);
+                         buildClass(nestedClassName, value[0]);
+                         
+                         const listTypeMap = {
+                             java: `List<${nestedClassName}>`,
+                             python: `List[${nestedClassName}]`,
+                             csharp: `List<${nestedClassName}>`,
+                             ts: `${nestedClassName}[]`
+                         };
+                         fieldType = listTypeMap[lang];
+                    }
+                    fields.push({ key, type: fieldType });
+                }
+
+                switch(lang) {
+                    case 'ts':
+                        classString = `interface ${className} {\n`;
+                        fields.forEach(f => classString += `    ${toCamelCase(f.key)}: ${f.type};\n`);
+                        classString += '}';
+                        break;
+                    case 'java':
+                        classString = `public class ${className} {\n`;
+                        fields.forEach(f => classString += `\n    private ${f.type} ${toCamelCase(f.key)};\n`);
+                        classString += `\n    // TODO: Add Getters and Setters\n`;
+                        classString += '}';
+                        break;
+                    case 'python':
+                         classString = `@dataclass\nclass ${className}:\n`;
+                         fields.forEach(f => classString += `    ${toSnakeCase(f.key)}: ${f.type}\n`);
+                         if (fields.length === 0) classString += '    pass\n';
+                         break;
+                    case 'csharp':
+                        classString = `public class ${className}\n{\n`;
+                        fields.forEach(f => {
+                           classString += `    [JsonPropertyName("${f.key}")]\n`;
+                           classString += `    public ${f.type} ${toPascalCase(f.key)} { get; set; }\n\n`;
+                        });
+                        classString = classString.trim() + `\n}`;
+                        break;
+                }
+                classes[className] = classString;
+            }
+
+            buildClass(rootClassName, jsonObj);
+            
+            let output = '';
+            const orderedClassNames = Object.keys(classes).reverse();
+            
+            const importMap = {
+                python: 'from dataclasses import dataclass\nfrom typing import List, Any\n\n',
+                java: 'import java.util.List;\n\n',
+                csharp: 'using System.Text.Json.Serialization;\nusing System.Collections.Generic;\n\n'
+            };
+            output += importMap[lang] || '';
+             
+            output += orderedClassNames.map(name => classes[name]).join('\n\n');
+            return output;
+        }
+
+
+        // --- Main Handler ---
+        function handleGenerate() {
+            const jsonStr = jsonInput.value.trim();
+            if (!jsonStr) {
+                showMessage('JSON 输入不能为空!');
+                return;
+            }
+
+            let parsedJson;
+            try {
+                parsedJson = JSON.parse(jsonStr);
+            } catch (error) {
+                showMessage('无效的 JSON 格式!');
+                return;
+            }
+            
+            const dataObject = Array.isArray(parsedJson) ? parsedJson[0] : parsedJson;
+            if (!dataObject || typeof dataObject !== 'object') {
+                 showMessage('JSON 内容无法生成实体类!');
+                 return;
+            }
+
+            const selectedLang = languageSelector.value;
+            const generatedCode = generateClasses(dataObject, "RootEntity", selectedLang);
+            
+            // --- Syntax Highlighting Logic ---
+            // 1. Clear any 'data-highlighted' attribute left by highlight.js to allow re-highlighting.
+            codeOutput.removeAttribute('data-highlighted');
+            
+            // 2. Set the raw code as the text content. This removes any previous highlighting (spans).
+            codeOutput.textContent = generatedCode;
+            
+            // 3. Set the correct language class for highlight.js to detect.
+            codeOutput.className = `language-${selectedLang} p-4 block`;
+
+            // 4. Tell highlight.js to process this specific element.
+            if (window.hljs) {
+                hljs.highlightElement(codeOutput);
+            } else {
+                console.error("highlight.js library not found.");
+            }
+        }
+
+        // --- Event Listeners ---
+        generateButton.addEventListener('click', handleGenerate);
+        
+        copyButton.addEventListener('click', () => {
+            if (!codeOutput.textContent) {
+                showMessage('没有可复制的代码!');
+                return;
+            }
+            navigator.clipboard.writeText(codeOutput.textContent).then(() => {
+                showMessage('代码已复制到剪贴板!', 2000);
+            }).catch(err => {
+                showMessage('复制失败!');
+            });
+        });
+        
+        languageSelector.addEventListener('change', () => {
+             // If there is text in the input, regenerate the code in the new language.
+             // Otherwise, just clear the output area.
+             if (jsonInput.value.trim()) {
+                handleGenerate();
+             } else {
+                 codeOutput.textContent = '';
+                 codeOutput.className = `language-${languageSelector.value} p-4 block`;
+             }
+        });
+    </script>
+</body>
+</html>

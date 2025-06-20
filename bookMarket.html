@@ -162,7 +162,7 @@
             loadingIndicator.style.display = 'flex';
             try {
                 const response = await fetch(API_URL, {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Master-Key': API_WRITE_KEY

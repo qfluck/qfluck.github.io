@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的网页收藏</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+        }
+        .bookmark-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .bookmark-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
+        }
+        /* Modal styles */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-container {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        /* Spinner */
+        .loader {
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Toast Notification */
+        .toast {
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-100">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">我的网页收藏</h1>
+            <button id="openModalButton" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                添加收藏
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="fixed inset-0 bg-white bg-opacity-75 flex justify-center items-center z-50">
+            <div class="loader"></div>
+        </div>
+
+        <!-- Bookmarks Grid -->
+        <div id="bookmarksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Bookmarks will be inserted here -->
+        </div>
+    </main>
+
+    <!-- Add Bookmark Modal -->
+    <div id="addBookmarkModal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
+        <div class="modal-container bg-white w-full max-w-md p-6 rounded-xl shadow-2xl opacity-0 transform scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-slate-800">添加新收藏</h2>
+                <button id="closeModalButton" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <form id="addBookmarkForm">
+                <div class="mb-4">
+                    <label for="title" class="block text-sm font-medium text-gray-700 mb-1">标题</label>
+                    <input type="text" id="title" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                </div>
+                <div class="mb-4">
+                    <label for="url" class="block text-sm font-medium text-gray-700 mb-1">网址 (URL)</label>
+                    <input type="url" id="url" name="url" required placeholder="https://example.com" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                </div>
+                <div class="mb-6">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">描述</label>
+                    <textarea id="description" name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200">保存收藏</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast fixed bottom-5 right-5 bg-gray-800 text-white py-2 px-5 rounded-lg shadow-lg">
+        <p id="toastMessage"></p>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- CONFIGURATION ---
+        // This is a free, public API endpoint from jsonbin.io.
+        // You can create your own at jsonbin.io and replace the URL and key.
+        // The bin should contain a JSON array: [ { "id": 1, "title": "...", ... }, ... ]
+        const API_URL = 'https://api.4416123.xyz/api/bookmark';
+        // IMPORTANT: Replace with your own write access key from jsonbin.io
+        // This key is required to UPDATE the data.
+        const API_WRITE_KEY = '$2a$10$v3g1Lp.FzHkS.w/uY5j3IuI.Y1pY1d.zKkZ5f4Q9E/z9j5c.iJ3B.';
+
+        // --- GLOBAL STATE ---
+        let bookmarks = [];
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('bookmarksGrid');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const modal = document.getElementById('addBookmarkModal');
+        const openModalButton = document.getElementById('openModalButton');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const form = document.getElementById('addBookmarkForm');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // --- UTILITY FUNCTIONS ---
+        const showToast = (message, isError = false) => {
+            toastMessage.textContent = message;
+            toast.className = `toast fixed bottom-5 right-5 text-white py-2 px-5 rounded-lg shadow-lg ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        };
+        
+        // --- API FUNCTIONS ---
+        const fetchBookmarks = async () => {
+            loadingIndicator.style.display = 'flex';
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                bookmarks = data.record || []; // Data from jsonbin is in the 'record' property
+                renderBookmarks();
+            } catch (error) {
+                console.error("Failed to fetch bookmarks:", error);
+                showToast('获取收藏失败!', true);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        };
+
+        const saveBookmarks = async () => {
+            loadingIndicator.style.display = 'flex';
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_WRITE_KEY
+                    },
+                    body: JSON.stringify(bookmarks)
+                });
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                showToast('数据已成功保存!');
+                renderBookmarks(); // Re-render to ensure consistency
+            } catch (error) {
+                console.error("Failed to save bookmarks:", error);
+                showToast('保存收藏失败!', true);
+                await fetchBookmarks(); // Re-fetch to revert local state
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        };
+
+        // --- RENDER FUNCTION ---
+        const renderBookmarks = () => {
+            grid.innerHTML = '';
+            if (bookmarks.length === 0) {
+                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center">还没有任何收藏，快去添加一个吧！</p>`;
+                return;
+            }
+            bookmarks.forEach(bookmark => {
+                const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${bookmark.url}`;
+                const card = document.createElement('div');
+                card.className = 'bookmark-card bg-white rounded-xl shadow-lg overflow-hidden';
+                card.innerHTML = `
+                    <a href="${bookmark.url}" target="_blank" rel="noopener noreferrer" class="block p-5">
+                        <div class="flex items-center space-x-4">
+                            <img src="${faviconUrl}" alt="${bookmark.title} favicon" class="w-12 h-12 rounded-lg object-contain" onerror="this.src='https://placehold.co/64x64/f0f0f0/333?text=B'">
+                            <div class="flex-1">
+                                <p class="font-bold text-lg text-slate-800 truncate">${bookmark.title}</p>
+                                <p class="text-gray-500 text-sm truncate">${bookmark.description || '没有描述'}</p>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="bg-gray-50 px-5 py-2 text-right">
+                        <button data-id="${bookmark.id}" class="delete-btn text-sm text-red-500 hover:text-red-700 font-semibold">删除</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        // --- EVENT HANDLERS ---
+        const handleAddBookmark = async (e) => {
+            e.preventDefault();
+            const newBookmark = {
+                id: Date.now(), // Use timestamp as a simple unique ID
+                title: e.target.elements.title.value,
+                url: e.target.elements.url.value,
+                description: e.target.elements.description.value
+            };
+            bookmarks.push(newBookmark);
+            closeModal();
+            await saveBookmarks();
+        };
+        
+        const handleDeleteBookmark = async (id) => {
+            const numericId = Number(id);
+            bookmarks = bookmarks.filter(bookmark => bookmark.id !== numericId);
+            await saveBookmarks();
+        };
+
+        grid.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const id = e.target.dataset.id;
+                if (confirm('确定要删除这个收藏吗?')) {
+                    handleDeleteBookmark(id);
+                }
+            }
+        });
+
+        // Modal Controls
+        const openModal = () => {
+            form.reset();
+            modal.classList.remove('hidden');
+            setTimeout(() => { // For transition effect
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.modal-container').classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        };
+        const closeModal = () => {
+            modal.classList.add('opacity-0');
+            modal.querySelector('.modal-container').classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); // Wait for transition
+        };
+
+        openModalButton.addEventListener('click', openModal);
+        closeModalButton.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        form.addEventListener('submit', handleAddBookmark);
+
+        // --- INITIAL LOAD ---
+        fetchBookmarks();
+    });
+</script>
+
+</body>
+</html>

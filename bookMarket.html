@@ -17,6 +17,8 @@
       .bookmark-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         position: relative;
+        /* Add cursor for draggable items */
+        cursor: grab;
       }
       .bookmark-card:hover {
         transform: translateY(-8px);
@@ -65,6 +67,19 @@
       .toast.show {
         transform: translateY(0);
         opacity: 1;
+      }
+
+      /* Sortable.js specific styles */
+      .sortable-ghost {
+        opacity: 0.2;
+        background-color: #3b82f6; /* Tailwind blue-500 */
+        border: 2px dashed #60a5fa; /* Tailwind blue-400 */
+      }
+      .sortable-chosen {
+        /* When an item is chosen for dragging */
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+          0 4px 6px -4px rgb(0 0 0 / 0.1);
+        cursor: grabbing;
       }
     </style>
   </head>
@@ -269,10 +284,22 @@
       <p id="toastMessage"></p>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         // --- CONFIGURATION ---
         const API_URL = "https://api.4416123.xyz/api/bookmark";
+        // Primary favicon service (Google)
+        const PRIMARY_FAVICON_URL = (url) =>
+          `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(
+            url
+          )}`;
+        // Fallback favicon service (example: Favicon.cc, you might need to find a more reliable one for China)
+        // Note: Using https://icon.horse/ is another good alternative that supports various sizes.
+        // For demonstration, let's use a generic placeholder that can be replaced.
+        const FALLBACK_FAVICON_URL = (url) =>
+          `https://api.byi.pw/favicon?url=${encodeURIComponent(url)}`; // This is just an example. Please verify its accessibility in China.
 
         // --- GLOBAL STATE ---
         let bookmarks = [];
@@ -289,7 +316,10 @@
         const form = document.getElementById("bookmarkForm");
         const toast = document.getElementById("toast");
         const toastMessage = document.getElementById("toastMessage");
-        const searchInput = document.getElementById("searchBookmarks"); // New search input
+        const searchInput = document.getElementById("searchBookmarks");
+
+        // --- Sortable.js Instance ---
+        let sortableInstance; // Declare a variable to hold the Sortable instance
 
         // --- UTILITY FUNCTIONS ---
         const showToast = (message, isError = false) => {
@@ -343,11 +373,11 @@
               );
             }
             showToast("数据已成功保存!");
-            renderBookmarks();
+            renderBookmarks(); // Re-render to ensure UI reflects saved state (though not strictly necessary after reorder)
           } catch (error) {
             console.error("保存收藏失败:", error);
             showToast("保存收藏失败!", true);
-            await fetchBookmarks(); // Re-fetch to revert local state
+            await fetchBookmarks(); // Re-fetch to revert local state if save fails
           } finally {
             loadingIndicator.style.display = "none";
           }
@@ -356,7 +386,7 @@
         // --- RENDER FUNCTION ---
         const renderBookmarks = () => {
           grid.innerHTML = "";
-          const searchTerm = searchInput.value.toLowerCase(); // Get current search term
+          const searchTerm = searchInput.value.toLowerCase();
 
           const filteredBookmarks = bookmarks.filter((bookmark) => {
             const titleMatch = bookmark.title
@@ -372,49 +402,104 @@
             }</h3><p class="mt-1 text-base text-gray-400">${
               searchTerm ? "请尝试不同的搜索词或" : ""
             }点击右上角“添加收藏”来开始吧！</p></div>`;
+            // Destroy Sortable instance if there are no items
+            if (sortableInstance) {
+              sortableInstance.destroy();
+              sortableInstance = null;
+            }
             return;
           }
+
           filteredBookmarks.forEach((bookmark) => {
-            const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(
-              bookmark.url
-            )}`;
+            // Initialize with primary favicon URL
+            let currentFaviconUrl = PRIMARY_FAVICON_URL(bookmark.url);
+
             const card = document.createElement("div");
             card.className =
               "bookmark-card bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700";
+            card.setAttribute("data-id", bookmark.id); // Add data-id for Sortable.js to identify items
             card.innerHTML = `
-                    <div class="card-actions absolute top-3 right-3 flex space-x-2">
-                        <button data-id="${sanitizeHTML(
-                          bookmark.id
-                        )}" class="edit-btn bg-gray-900/50 hover:bg-blue-600 p-2 rounded-full text-gray-400 hover:text-white transition-all">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L13.196 5.196z" /></svg>
-                        </button>
-                        <button data-id="${sanitizeHTML(
-                          bookmark.id
-                        )}" class="delete-btn bg-gray-900/50 hover:bg-red-600 p-2 rounded-full text-gray-400 hover:text-white transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </div>
-                    <a href="${sanitizeHTML(
-                      bookmark.url
-                    )}" target="_blank" rel="noopener noreferrer" class="block p-5">
-                        <div class="flex items-center space-x-4">
-                            <img src="${faviconUrl}" alt="${sanitizeHTML(
+                        <div class="card-actions absolute top-3 right-3 flex space-x-2">
+                            <button data-id="${sanitizeHTML(
+                              bookmark.id
+                            )}" class="edit-btn bg-gray-900/50 hover:bg-blue-600 p-2 rounded-full text-gray-400 hover:text-white transition-all">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L13.196 5.196z" /></svg>
+                            </button>
+                            <button data-id="${sanitizeHTML(
+                              bookmark.id
+                            )}" class="delete-btn bg-gray-900/50 hover:bg-red-600 p-2 rounded-full text-gray-400 hover:text-white transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <a href="${sanitizeHTML(
+                          bookmark.url
+                        )}" target="_blank" rel="noopener noreferrer" class="block p-5">
+                            <div class="flex items-center space-x-4">
+                                <img src="${currentFaviconUrl}" alt="${sanitizeHTML(
               bookmark.title
-            )} favicon" class="w-12 h-12 rounded-lg bg-white/10 p-1 object-contain" onerror="this.src='https://placehold.co/64x64/2d3748/e2e8f0?text=B'">
-                            <div class="flex-1 min-w-0">
-                                <p class="font-bold text-lg text-white truncate" title="${sanitizeHTML(
-                                  bookmark.title
-                                )}">${sanitizeHTML(bookmark.title)}</p>
-                                <p class="text-gray-400 text-sm truncate" title="${sanitizeHTML(
-                                  bookmark.description
-                                )}">${
+            )} favicon" class="w-12 h-12 rounded-lg bg-white/10 p-1 object-contain favicon-img" data-url="${sanitizeHTML(
+              bookmark.url
+            )}">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-bold text-lg text-white truncate" title="${sanitizeHTML(
+                                      bookmark.title
+                                    )}">${sanitizeHTML(bookmark.title)}</p>
+                                    <p class="text-gray-400 text-sm truncate" title="${sanitizeHTML(
+                                      bookmark.description
+                                    )}">${
               sanitizeHTML(bookmark.description) || "没有描述"
             }</p>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                `;
+                        </a>
+                    `;
             grid.appendChild(card);
+          });
+
+          // Attach onerror handler for images after they are added to the DOM
+          document.querySelectorAll(".favicon-img").forEach((img) => {
+            img.onerror = function () {
+              const originalUrl = this.dataset.url;
+              // If primary fails, try the fallback
+              if (this.src === PRIMARY_FAVICON_URL(originalUrl)) {
+                this.src = FALLBACK_FAVICON_URL(originalUrl);
+              } else {
+                // If both fail, use the generic placeholder
+                this.src = "https://placehold.co/64x64/2d3748/e2e8f0?text=B";
+              }
+              this.onerror = null; // Prevent infinite loops if fallback also fails
+            };
+          });
+
+          // Initialize Sortable.js if not already initialized or if items are re-rendered
+          if (sortableInstance) {
+            sortableInstance.destroy(); // Destroy old instance to re-initialize
+          }
+          sortableInstance = new Sortable(grid, {
+            animation: 150,
+            ghostClass: "sortable-ghost", // Class name for the drop placeholder
+            chosenClass: "sortable-chosen", // Class name for the chosen item
+            dragClass: "sortable-drag", // Class name for the dragging item
+            onEnd: function (evt) {
+              // Get the moved item's ID
+              const movedItemId = parseInt(evt.item.dataset.id);
+
+              // Find the moved item in the original bookmarks array
+              const [movedItem] = bookmarks.splice(evt.oldIndex, 1);
+              // Insert the moved item at the new index
+              bookmarks.splice(evt.newIndex, 0, movedItem);
+
+              // Save the new order to the API
+              saveBookmarks();
+            },
+            filter: ".card-actions", // Prevent dragging when clicking on action buttons
+            onFilter: function (evt) {
+              // If filter matches, prevent dragging and handle the event (e.g., button click)
+              if (evt.item.contains(evt.target)) {
+                // It's a click on a button, not a drag attempt
+                evt.cancel = true; // Prevents Sortable from initiating a drag
+              }
+            },
           });
         };
 
@@ -467,7 +552,7 @@
                 importedData.forEach((item, index) => {
                   if (item && item.url && !existingUrls.has(item.url)) {
                     const newBookmark = {
-                      id: item.id || Date.now() + index,
+                      id: item.id || Date.now() + index, // Assign ID or use existing if provided
                       title: item.title || "无标题",
                       url: item.url,
                       description: item.description || "",
@@ -477,24 +562,37 @@
                     newBookmarksAdded++;
                   }
                 });
-              }
-              if (file.name.split(".").pop().toLowerCase() === "html") {
-                let bookmarkDataHtml = document.createElement("div");
-                bookmarkDataHtml.innerHTML = e.target.result;
-                const links = bookmarkDataHtml.querySelectorAll("a");
+              } else if (file.name.split(".").pop().toLowerCase() === "html") {
+                // Parse HTML bookmark file
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(
+                  e.target.result,
+                  "text/html"
+                );
+                const links = doc.querySelectorAll("dt > a"); // Select <a> tags directly under <DT>
+
                 links.forEach((item, index) => {
-                  if (item && item.href && !existingUrls.has(item.href)) {
+                  const url = item.getAttribute("href");
+                  const title = item.textContent.trim();
+                  // For HTML bookmarks, description is often not standard, keep it empty or infer
+                  const description = "";
+
+                  if (url && title && !existingUrls.has(url)) {
                     const newBookmark = {
-                      id: item.id || Date.now() + index,
-                      title: item.innerText || "无标题",
-                      url: item.href,
-                      description: item.description || "",
+                      id: Date.now() + index, // Generate unique ID
+                      title: title,
+                      url: url,
+                      description: description,
                     };
                     bookmarks.push(newBookmark);
                     existingUrls.add(newBookmark.url);
                     newBookmarksAdded++;
                   }
                 });
+              } else {
+                throw new Error(
+                  "不支持的文件格式。请导入 .json 或 .html 文件。"
+                );
               }
 
               if (newBookmarksAdded > 0) {
@@ -507,7 +605,7 @@
               }
             } catch (error) {
               console.error("导入文件失败:", error);
-              showToast("导入失败，请确保文件是有效的JSON数组格式。", true);
+              showToast(`导入失败: ${error.message}`, true);
             } finally {
               importFileInput.value = "";
             }
@@ -581,7 +679,7 @@
         form.addEventListener("submit", handleFormSubmit);
         importButton.addEventListener("click", () => importFileInput.click());
         importFileInput.addEventListener("change", handleFileImport);
-        searchInput.addEventListener("input", renderBookmarks); // Listen for input on search field
+        searchInput.addEventListener("input", renderBookmarks);
 
         // --- INITIAL LOAD ---
         fetchBookmarks();

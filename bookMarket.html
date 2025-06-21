@@ -148,7 +148,7 @@
                 const response = await fetch(API_URL);
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
                 const data = await response.json();
-                bookmarks = data.record || []; // Data from jsonbin is in the 'record' property
+                bookmarks = data || []; // Data from jsonbin is in the 'record' property
                 renderBookmarks();
             } catch (error) {
                 console.error("Failed to fetch bookmarks:", error);

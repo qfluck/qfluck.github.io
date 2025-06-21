@@ -7,27 +7,41 @@
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* A more professional font and a subtle gradient background */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+            background-color: #111827; /* Tailwind gray-900 */
+            background-image: linear-gradient(145deg, #111827 0%, #1f2937 100%);
         }
+        /* Enhanced card styles with hover effect */
         .bookmark-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
         }
         .bookmark-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2), 0 8px 10px -6px rgb(0 0 0 / 0.2);
         }
-        /* Modal styles */
+        .bookmark-card .delete-btn {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .bookmark-card:hover .delete-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+        /* Modal transition styles */
         .modal-overlay {
             transition: opacity 0.3s ease;
         }
         .modal-container {
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
-        /* Spinner */
+        /* Loading spinner */
         .loader {
-            border: 5px solid #f3f3f3; /* Light grey */
-            border-top: 5px solid #3498db; /* Blue */
+            border: 5px solid #374151; /* gray-700 */
+            border-top: 5px solid #38bdf8; /* sky-400 */
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -40,7 +54,7 @@
         /* Toast Notification */
         .toast {
             transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-            transform: translateY(100%);
+            transform: translateY(200%);
             opacity: 0;
         }
         .toast.show {
@@ -49,13 +63,16 @@
         }
     </style>
 </head>
-<body class="bg-slate-100">
+<body class="text-gray-200">
 
     <!-- Header -->
-    <header class="bg-white shadow-md sticky top-0 z-20">
+    <header class="bg-gray-900/50 backdrop-blur-lg shadow-lg sticky top-0 z-20 border-b border-gray-700">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">我的网页收藏</h1>
-            <button id="openModalButton" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center">
+            <div class="flex items-center space-x-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">我的网页收藏</h1>
+            </div>
+            <button id="openModalButton" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:shadow-sky-500/50 transition duration-300 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                 添加收藏
             </button>
@@ -65,57 +82,59 @@
     <!-- Main Content -->
     <main class="container mx-auto p-4 sm:p-6 lg:p-8">
         <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="fixed inset-0 bg-white bg-opacity-75 flex justify-center items-center z-50">
+        <div id="loadingIndicator" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center z-50">
             <div class="loader"></div>
         </div>
 
         <!-- Bookmarks Grid -->
         <div id="bookmarksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- Bookmarks will be inserted here -->
+            <!-- Empty state will be shown here if no bookmarks -->
         </div>
     </main>
 
     <!-- Add Bookmark Modal -->
-    <div id="addBookmarkModal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
-        <div class="modal-container bg-white w-full max-w-md p-6 rounded-xl shadow-2xl opacity-0 transform scale-95">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-slate-800">添加新收藏</h2>
-                <button id="closeModalButton" class="text-gray-500 hover:text-gray-800">&times;</button>
+    <div id="addBookmarkModal" class="modal-overlay fixed inset-0 bg-black/60 flex justify-center items-center p-4 z-40 hidden opacity-0">
+        <div class="modal-container bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-xl shadow-2xl opacity-0 transform scale-95">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white">添加新收藏</h2>
+                <button id="closeModalButton" class="text-gray-400 hover:text-white transition-colors">&times;</button>
             </div>
             <form id="addBookmarkForm">
                 <div class="mb-4">
-                    <label for="title" class="block text-sm font-medium text-gray-700 mb-1">标题</label>
-                    <input type="text" id="title" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                    <label for="title" class="block text-sm font-medium text-gray-300 mb-1">标题</label>
+                    <input type="text" id="title" name="title" required class="w-full bg-gray-700 text-white px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
                 </div>
                 <div class="mb-4">
-                    <label for="url" class="block text-sm font-medium text-gray-700 mb-1">网址 (URL)</label>
-                    <input type="url" id="url" name="url" required placeholder="https://example.com" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                    <label for="url" class="block text-sm font-medium text-gray-300 mb-1">网址 (URL)</label>
+                    <input type="url" id="url" name="url" required placeholder="https://example.com" class="w-full bg-gray-700 text-white px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
                 </div>
                 <div class="mb-6">
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">描述</label>
-                    <textarea id="description" name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"></textarea>
+                    <label for="description" class="block text-sm font-medium text-gray-300 mb-1">描述</label>
+                    <textarea id="description" name="description" rows="3" class="w-full bg-gray-700 text-white px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"></textarea>
                 </div>
                 <div class="flex justify-end">
-                    <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200">保存收藏</button>
+                    <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-sky-500/50 transition duration-300">保存</button>
                 </div>
             </form>
         </div>
     </div>
     
     <!-- Toast Notification -->
-    <div id="toast" class="toast fixed bottom-5 right-5 bg-gray-800 text-white py-2 px-5 rounded-lg shadow-lg">
+    <div id="toast" class="toast fixed bottom-5 right-5 text-white py-3 px-6 rounded-lg shadow-2xl">
         <p id="toastMessage"></p>
     </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- CONFIGURATION ---
-        // This is a free, public API endpoint from jsonbin.io.
-        // You can create your own at jsonbin.io and replace the URL and key.
-        // The bin should contain a JSON array: [ { "id": 1, "title": "...", ... }, ... ]
         const API_URL = 'https://api.4416123.xyz/api/bookmark';
-        // IMPORTANT: Replace with your own write access key from jsonbin.io
-        // This key is required to UPDATE the data.
+        
+        // !!! --- SECURITY WARNING --- !!!
+        // Exposing a write-access key in frontend JavaScript is a SIGNIFICANT security risk.
+        // Anyone can find this key by viewing the page source and gain write access to your data.
+        // For a production application, all write operations (add, delete) should be handled 
+        // by a secure backend server that authenticates requests.
+        // The key is kept here only for demonstration purposes based on the request.
         const API_WRITE_KEY = '$2a$10$v3g1Lp.FzHkS.w/uY5j3IuI.Y1pY1d.zKkZ5f4Q9E/z9j5c.iJ3B.';
 
         // --- GLOBAL STATE ---
@@ -134,11 +153,17 @@
         // --- UTILITY FUNCTIONS ---
         const showToast = (message, isError = false) => {
             toastMessage.textContent = message;
-            toast.className = `toast fixed bottom-5 right-5 text-white py-2 px-5 rounded-lg shadow-lg ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+            toast.className = `toast fixed bottom-5 right-5 text-white py-3 px-6 rounded-lg shadow-2xl ${isError ? 'bg-red-600' : 'bg-green-600'}`;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
+        };
+        
+        const sanitizeHTML = (str) => {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
         };
         
         // --- API FUNCTIONS ---
@@ -146,13 +171,13 @@
             loadingIndicator.style.display = 'flex';
             try {
                 const response = await fetch(API_URL);
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                if (!response.ok) throw new Error(`HTTP 错误! 状态: ${response.status}`);
                 const data = await response.json();
-                bookmarks = data || []; // Data from jsonbin is in the 'record' property
+                bookmarks = data || []; // Assume the API returns the array directly
                 renderBookmarks();
             } catch (error) {
-                console.error("Failed to fetch bookmarks:", error);
-                showToast('获取收藏失败!', true);
+                console.error("获取收藏失败:", error);
+                showToast('获取收藏失败，请检查API或网络。', true);
             } finally {
                 loadingIndicator.style.display = 'none';
             }
@@ -162,20 +187,24 @@
             loadingIndicator.style.display = 'flex';
             try {
                 const response = await fetch(API_URL, {
-                    method: 'POST',
+                    method: 'POST', // Changed from PUT to POST as requested
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': API_WRITE_KEY
+                        // See security warning above. This header might be required by your specific API.
+                        // 'X-Master-Key': API_WRITE_KEY 
                     },
                     body: JSON.stringify(bookmarks)
                 });
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP 错误! 状态: ${response.status}. 响应: ${errorData}`);
+                }
                 showToast('数据已成功保存!');
-                renderBookmarks(); // Re-render to ensure consistency
+                renderBookmarks();
             } catch (error) {
-                console.error("Failed to save bookmarks:", error);
+                console.error("保存收藏失败:", error);
                 showToast('保存收藏失败!', true);
-                await fetchBookmarks(); // Re-fetch to revert local state
+                await fetchBookmarks(); // Re-fetch to revert local state to the server's state
             } finally {
                 loadingIndicator.style.display = 'none';
             }
@@ -185,26 +214,33 @@
         const renderBookmarks = () => {
             grid.innerHTML = '';
             if (bookmarks.length === 0) {
-                grid.innerHTML = `<p class="text-gray-500 col-span-full text-center">还没有任何收藏，快去添加一个吧！</p>`;
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16 px-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-24 w-24 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12h.01" /></svg>
+                        <h3 class="mt-2 text-xl font-medium text-white">没有收藏</h3>
+                        <p class="mt-1 text-base text-gray-400">点击右上角“添加收藏”来开始吧！</p>
+                    </div>`;
                 return;
             }
             bookmarks.forEach(bookmark => {
-                const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${bookmark.url}`;
+                const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(bookmark.url)}`;
                 const card = document.createElement('div');
-                card.className = 'bookmark-card bg-white rounded-xl shadow-lg overflow-hidden';
+                card.className = 'bookmark-card bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700';
                 card.innerHTML = `
-                    <a href="${bookmark.url}" target="_blank" rel="noopener noreferrer" class="block p-5">
+                    <div class="absolute top-3 right-3">
+                         <button data-id="${sanitizeHTML(bookmark.id)}" class="delete-btn bg-gray-900/50 hover:bg-red-600 p-2 rounded-full text-gray-400 hover:text-white transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                    <a href="${sanitizeHTML(bookmark.url)}" target="_blank" rel="noopener noreferrer" class="block p-5">
                         <div class="flex items-center space-x-4">
-                            <img src="${faviconUrl}" alt="${bookmark.title} favicon" class="w-12 h-12 rounded-lg object-contain" onerror="this.src='https://placehold.co/64x64/f0f0f0/333?text=B'">
-                            <div class="flex-1">
-                                <p class="font-bold text-lg text-slate-800 truncate">${bookmark.title}</p>
-                                <p class="text-gray-500 text-sm truncate">${bookmark.description || '没有描述'}</p>
+                            <img src="${faviconUrl}" alt="${sanitizeHTML(bookmark.title)} favicon" class="w-12 h-12 rounded-lg bg-white/10 p-1 object-contain" onerror="this.src='https://placehold.co/64x64/2d3748/e2e8f0?text=B'">
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-lg text-white truncate">${sanitizeHTML(bookmark.title)}</p>
+                                <p class="text-gray-400 text-sm truncate">${sanitizeHTML(bookmark.description) || '没有描述'}</p>
                             </div>
                         </div>
                     </a>
-                    <div class="bg-gray-50 px-5 py-2 text-right">
-                        <button data-id="${bookmark.id}" class="delete-btn text-sm text-red-500 hover:text-red-700 font-semibold">删除</button>
-                    </div>
                 `;
                 grid.appendChild(card);
             });
@@ -214,10 +250,10 @@
         const handleAddBookmark = async (e) => {
             e.preventDefault();
             const newBookmark = {
-                id: Date.now(), // Use timestamp as a simple unique ID
-                title: e.target.elements.title.value,
-                url: e.target.elements.url.value,
-                description: e.target.elements.description.value
+                id: Date.now(),
+                title: form.elements.title.value,
+                url: form.elements.url.value,
+                description: form.elements.description.value
             };
             bookmarks.push(newBookmark);
             closeModal();
@@ -231,8 +267,9 @@
         };
 
         grid.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-btn')) {
-                const id = e.target.dataset.id;
+            const deleteButton = e.target.closest('.delete-btn');
+            if (deleteButton) {
+                const id = deleteButton.dataset.id;
                 if (confirm('确定要删除这个收藏吗?')) {
                     handleDeleteBookmark(id);
                 }
@@ -243,7 +280,7 @@
         const openModal = () => {
             form.reset();
             modal.classList.remove('hidden');
-            setTimeout(() => { // For transition effect
+            setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modal.querySelector('.modal-container').classList.remove('opacity-0', 'scale-95');
             }, 10);
@@ -251,16 +288,12 @@
         const closeModal = () => {
             modal.classList.add('opacity-0');
             modal.querySelector('.modal-container').classList.add('opacity-0', 'scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300); // Wait for transition
+            setTimeout(() => modal.classList.add('hidden'), 300);
         };
 
         openModalButton.addEventListener('click', openModal);
         closeModalButton.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
+        modal.addEventListener('click', (e) => e.target === modal && closeModal());
         form.addEventListener('submit', handleAddBookmark);
 
         // --- INITIAL LOAD ---

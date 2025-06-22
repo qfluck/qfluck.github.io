@@ -76,7 +76,7 @@
 <body class="bg-slate-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
     <!-- API Key Modal -->
-    <div id="apiKeyModal" class="modal-overlay fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex justify-center items-center p-4 z-50">
+    <div id="apiKeyModal" class="modal-overlay fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex justify-center items-center p-4 z-50 opacity-0 hidden">
         <div class="modal-container bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 w-full max-w-md p-6 rounded-xl shadow-2xl">
             <div class="text-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -84,11 +84,15 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">为了保护您的数据安全，请提供访问密钥。</p>
             </div>
             <form id="apiKeyForm" class="mt-6">
-                <div class="mb-4">
+                <div class="mb-2">
                     <label for="apiKeyInput" class="sr-only">API Key</label>
                     <input type="password" id="apiKeyInput" name="apiKey" required placeholder="您的 API Key" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
                 </div>
-                <button type="submit" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-5 rounded-lg shadow-lg hover:shadow-sky-500/50 transition duration-300">授权并进入</button>
+                <p id="apiKeyError" class="text-red-500 text-sm h-5 text-center"></p>
+                <button type="submit" class="w-full mt-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-5 rounded-lg shadow-lg hover:shadow-sky-500/50 transition duration-300 flex items-center justify-center">
+                    <span id="apiKeySubmitText">授权并进入</span>
+                    <div id="apiKeyLoader" class="loader !w-6 !h-6 !border-4 !border-t-transparent hidden ml-2"></div>
+                </button>
             </form>
         </div>
     </div>
@@ -150,6 +154,10 @@
             appWrapper: document.getElementById('appWrapper'),
             apiKeyModal: document.getElementById('apiKeyModal'),
             apiKeyForm: document.getElementById('apiKeyForm'),
+            apiKeyInput: document.getElementById('apiKeyInput'),
+            apiKeyError: document.getElementById('apiKeyError'),
+            apiKeyLoader: document.getElementById('apiKeyLoader'),
+            apiKeySubmitText: document.getElementById('apiKeySubmitText'),
             grid: document.getElementById('bookmarksGrid'),
             loadingIndicator: document.getElementById('loadingIndicator'),
             importButton: document.getElementById('importButton'),
@@ -181,11 +189,13 @@
             try {
                 const options = {
                     method,
-                    headers: { 'Content-Type': 'application/json', 'X-API-KEY': API_KEY }
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY }
                 };
                 if (body) options.body = JSON.stringify(body);
                 const response = await fetch(API_URL, options);
-                if (!response.ok) throw new Error(`HTTP 错误! 状态: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
                 return method === 'GET' ? await response.json() : true;
             } finally {
                 dom.loadingIndicator.style.display = 'none';
@@ -193,13 +203,8 @@
         };
 
         const fetchBookmarks = async () => {
-            try {
-                bookmarks = (await apiCall('GET')) || [];
-                renderBookmarks();
-            } catch (error) {
-                console.error("获取收藏失败:", error);
-                showToast('获取收藏失败，请检查API或网络。', true);
-            }
+            bookmarks = (await apiCall('GET')) || [];
+            renderBookmarks();
         };
 
         const saveBookmarks = async () => {
@@ -213,19 +218,16 @@
                 await fetchBookmarks(); // Revert state on failure
             }
         };
-
+        
         const renderBookmarks = () => {
             const searchTerm = dom.searchInput.value.toLowerCase();
             const filteredBookmarks = bookmarks.filter(b => b.title.toLowerCase().includes(searchTerm) || b.url.toLowerCase().includes(searchTerm));
-            
             dom.grid.innerHTML = '';
             if (filteredBookmarks.length === 0) {
                  dom.grid.innerHTML = `<div class="col-span-full text-center py-16 px-6"><svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-24 w-24 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12h.01" /></svg><h3 class="mt-2 text-xl font-medium text-gray-700 dark:text-white">${searchTerm ? "没有找到匹配的收藏" : "没有收藏"}</h3><p class="mt-1 text-base text-gray-500 dark:text-gray-400">${searchTerm ? "请尝试不同的搜索词或" : ""}点击右上角“添加收藏”来开始吧！</p></div>`;
-                if (sortableInstance) sortableInstance.destroy();
-                sortableInstance = null;
+                if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
                 return;
             }
-
             filteredBookmarks.forEach(b => {
                 const card = document.createElement('div');
                 card.className = 'bookmark-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700';
@@ -233,26 +235,16 @@
                 card.innerHTML = `<div class="card-actions absolute top-3 right-3 flex space-x-2"><button data-id="${b.id}" class="edit-btn bg-gray-200 dark:bg-gray-900/50 hover:bg-blue-500 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-white transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L13.196 5.196z" /></svg></button><button data-id="${b.id}" class="delete-btn bg-gray-200 dark:bg-gray-900/50 hover:bg-red-600 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-white transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button></div><a href="${sanitizeHTML(b.url)}" target="_blank" rel="noopener noreferrer" class="block p-5"><div class="flex items-center space-x-4"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(b.url)}" alt="${sanitizeHTML(b.title)} favicon" class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-white/10 p-1 object-contain" onerror="this.src='https://placehold.co/64x64/e5e7eb/374151?text=B'"><div class="flex-1 min-w-0"><p class="font-bold text-lg text-gray-800 dark:text-white truncate" title="${sanitizeHTML(b.title)}">${sanitizeHTML(b.title)}</p><p class="text-gray-500 dark:text-gray-400 text-sm truncate" title="${sanitizeHTML(b.description)}">${sanitizeHTML(b.description) || '没有描述'}</p></div></div></a>`;
                 dom.grid.appendChild(card);
             });
-            
             if (sortableInstance) sortableInstance.destroy();
-            sortableInstance = new Sortable(dom.grid, { animation: 150, ghostClass: 'sortable-ghost', onEnd: handleSort });
+            sortableInstance = new Sortable(dom.grid, { animation: 150, ghostClass: 'sortable-ghost', onEnd: async evt => { const [moved] = bookmarks.splice(evt.oldIndex, 1); bookmarks.splice(evt.newIndex, 0, moved); await saveBookmarks(); } });
         };
         
-        const handleSort = (evt) => {
-            const [movedItem] = bookmarks.splice(evt.oldIndex, 1);
-            bookmarks.splice(evt.newIndex, 0, movedItem);
-            saveBookmarks();
-        };
-
         const handleFormSubmit = async e => {
             e.preventDefault();
             const id = Number(dom.form.elements.id.value);
             const data = { title: dom.form.elements.title.value, url: dom.form.elements.url.value, description: dom.form.elements.description.value };
-            if (id) {
-                bookmarks = bookmarks.map(b => b.id === id ? { ...b, ...data } : b);
-            } else {
-                bookmarks.push({ id: Date.now(), ...data });
-            }
+            if (id) bookmarks = bookmarks.map(b => b.id === id ? { ...b, ...data } : b);
+            else bookmarks.push({ id: Date.now(), ...data });
             closeModal();
             await saveBookmarks();
         };
@@ -270,16 +262,13 @@
                 try {
                     let importedData = [];
                     const fileExt = file.name.split('.').pop().toLowerCase();
-                    if (fileExt === 'json') {
-                        importedData = JSON.parse(event.target.result);
-                    } else if (fileExt === 'html') {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(event.target.result, "text/html");
+                    if (fileExt === 'json') importedData = JSON.parse(event.target.result);
+                    else if (fileExt === 'html') {
+                        const doc = new DOMParser().parseFromString(event.target.result, "text/html");
                         doc.querySelectorAll("dt > a").forEach(link => importedData.push({ url: link.href, title: link.textContent.trim(), description: '' }));
-                    } else {
-                        throw new Error("不支持的文件格式。");
-                    }
+                    } else throw new Error("不支持的文件格式。");
                     if (!Array.isArray(importedData)) throw new Error("文件内容格式不正确。");
+                    
                     const existingUrls = new Set(bookmarks.map(b => b.url));
                     let newCount = 0;
                     importedData.forEach((item, i) => {
@@ -291,11 +280,7 @@
                     });
                     showToast(newCount > 0 ? `成功导入并去重 ${newCount} 个新收藏！正在同步...` : '没有新的收藏可以导入。', newCount === 0);
                     if (newCount > 0) await saveBookmarks();
-                } catch (error) {
-                    showToast(`导入失败: ${error.message}`, true);
-                } finally {
-                    importFileInput.value = '';
-                }
+                } catch (error) { showToast(`导入失败: ${error.message}`, true); } finally { importFileInput.value = ''; }
             };
             reader.readAsText(file);
         };
@@ -329,32 +314,73 @@
         };
         
         const applyTheme = (theme) => {
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                dom.darkIcon.classList.remove('hidden');
-                dom.lightIcon.classList.add('hidden');
-            } else {
-                document.documentElement.classList.remove('dark');
-                dom.lightIcon.classList.remove('hidden');
-                dom.darkIcon.classList.add('hidden');
-            }
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+            dom.darkIcon.classList.toggle('hidden', theme !== 'dark');
+            dom.lightIcon.classList.toggle('hidden', theme === 'dark');
         };
 
         const toggleTheme = () => {
-            const currentTheme = localStorage.getItem('theme') || 'dark';
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const newTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
         };
 
-        const initializeApp = (key) => {
+        const initializeApp = async (key, isAutoLogin = false) => {
             API_KEY = key;
-            dom.apiKeyModal.classList.add('opacity-0');
-            setTimeout(() => {
-                dom.apiKeyModal.style.display = 'none';
-                dom.appWrapper.classList.remove('hidden');
-                fetchBookmarks();
-            }, 300);
+            const submitBtn = dom.apiKeyForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            dom.apiKeyLoader.classList.remove('hidden');
+            dom.apiKeySubmitText.textContent = '验证中...';
+            dom.apiKeyError.textContent = '';
+            
+            try {
+                await fetchBookmarks();
+                if (!isAutoLogin) {
+                    const keyData = { key: API_KEY, timestamp: Date.now() };
+                    localStorage.setItem('apiKeyData', JSON.stringify(keyData));
+                }
+                dom.apiKeyModal.classList.add('opacity-0');
+                setTimeout(() => {
+                    dom.apiKeyModal.style.display = 'none';
+                    dom.appWrapper.classList.remove('hidden');
+                }, 300);
+            } catch (error) {
+                if (error.message.includes('401')) {
+                    if (isAutoLogin) localStorage.removeItem('apiKeyData');
+                    showApiKeyModal(true, '密钥错误或已失效，请重新输入。');
+                } else {
+                    showApiKeyModal(true, '无法连接服务器，请检查网络。');
+                }
+            } finally {
+                submitBtn.disabled = false;
+                dom.apiKeyLoader.classList.add('hidden');
+                dom.apiKeySubmitText.textContent = '授权并进入';
+            }
+        };
+
+        const showApiKeyModal = (show, message = '') => {
+            dom.apiKeyError.textContent = message;
+            if(show) {
+                dom.apiKeyInput.value = '';
+                dom.apiKeyModal.classList.remove('hidden');
+                setTimeout(() => dom.apiKeyModal.classList.remove('opacity-0'), 10);
+            }
+        };
+
+        const checkStoredKey = () => {
+            const storedKeyData = localStorage.getItem('apiKeyData');
+            if (storedKeyData) {
+                const { key, timestamp } = JSON.parse(storedKeyData);
+                const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+                if (Date.now() - timestamp > thirtyDays) {
+                    localStorage.removeItem('apiKeyData');
+                    showApiKeyModal(true, '密钥已过期，请重新登录。');
+                } else {
+                    initializeApp(key, true);
+                }
+            } else {
+                showApiKeyModal(true);
+            }
         };
         
         // --- EVENT LISTENERS & INITIALIZATION ---
@@ -366,18 +392,10 @@
         dom.importFileInput.addEventListener('change', handleFileImport);
         dom.searchInput.addEventListener('input', renderBookmarks);
         dom.themeToggle.addEventListener('click', toggleTheme);
-        
-        dom.apiKeyForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const keyInput = document.getElementById('apiKeyInput');
-            if (keyInput.value.trim()) {
-                initializeApp(keyInput.value.trim());
-            } else {
-                showToast("密钥不能为空！", true);
-            }
-        });
+        dom.apiKeyForm.addEventListener('submit', e => { e.preventDefault(); if (dom.apiKeyInput.value.trim()) initializeApp(dom.apiKeyInput.value.trim()); else dom.apiKeyError.textContent = "密钥不能为空！"; });
         
         applyTheme(localStorage.getItem('theme') || 'dark');
+        checkStoredKey();
     });
 </script>
 </body>

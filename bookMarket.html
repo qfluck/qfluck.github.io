@@ -4,6 +4,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>我的网页收藏</title>
     <script src="https://cdn.tailwindcss.com"></script>
+      <script>
+        // 配置 Tailwind CSS 暗色模式
+        tailwind.config = {
+            darkMode: 'class', // 使用 class 模式而非媒体查询
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6', // 蓝色作为主色调
+                        secondary: '#10B981', // 绿色作为辅助色
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
         /* A more professional font and a subtle gradient background */
         body {

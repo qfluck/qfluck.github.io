@@ -266,7 +266,7 @@
             const id = Number(dom.form.elements.id.value);
             const data = { title: dom.form.elements.title.value, url: dom.form.elements.url.value, description: dom.form.elements.description.value };
             if (id) bookmarks = bookmarks.map(b => b.id === id ? { ...b, ...data } : b);
-            else bookmarks.push({ id: Date.now(), ...data });
+            else bookmarks.unshift({ id: Date.now(), ...data });
             closeModal();
             await saveBookmarks();
         };

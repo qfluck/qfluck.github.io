@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片主色调获取工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .color-card {
+                @apply rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
+            }
+            .pulse-animation {
+                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+            .fade-in {
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-2xl">
+        <header class="text-center mb-10">
+            <h1 class="text-[clamp(1.5rem,4vw,2.2rem)] font-bold text-gray-800 mb-3">
+                <i class="fa fa-paint-brush text-primary mr-2"></i>图片主色调提取
+            </h1>
+            <p class="text-gray-600">输入图片URL，获取图片的主色调信息</p>
+        </header>
+        
+        <main class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <!-- 输入区域 -->
+            <div class="flex flex-col md:flex-row gap-4 mb-8">
+                <input 
+                    type="text" 
+                    id="imageUrl" 
+                    placeholder="请输入图片URL..." 
+                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
+                    value="https://picsum.photos/800/600?random=1"
+                >
+                <button 
+                    id="fetchColorBtn" 
+                    class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+                >
+                    <i class="fa fa-search"></i>
+                    <span>获取主色调</span>
+                </button>
+            </div>
+            
+            <!-- 加载状态 -->
+            <div id="loading" class="hidden flex flex-col items-center justify-center py-10">
+                <div class="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-3"></div>
+                <p class="text-gray-600">正在获取颜色信息...</p>
+            </div>
+            
+            <!-- 错误信息 -->
+            <div id="error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 fade-in"></div>
+            
+            <!-- 结果展示区 -->
+            <div id="result" class="hidden fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 图片预览 -->
+                    <div>
+                        <h3 class="text-gray-700 font-medium mb-2">图片预览</h3>
+                        <div class="bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                            <img id="previewImage" src="" alt="图片预览" class="w-full h-auto max-h-64 object-contain">
+                        </div>
+                    </div>
+                    
+                    <!-- 颜色信息 -->
+                    <div>
+                        <h3 class="text-gray-700 font-medium mb-2">主色调信息</h3>
+                        <div class="flex flex-col gap-4">
+                            <div class="color-card">
+                                <div id="colorDisplay" class="h-32 rounded-t-xl"></div>
+                                <div class="p-4 flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-600">颜色值:</span>
+                                        <span id="colorValue" class="font-mono bg-gray-100 px-2 py-1 rounded text-sm"></span>
+                                    </div>
+                                    <button 
+                                        id="copyBtn" 
+                                        class="text-primary hover:text-primary/80 transition-colors flex items-center gap-1 text-sm"
+                                    >
+                                        <i class="fa fa-copy"></i>
+                                        <span>复制</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="mt-10 text-center text-gray-500 text-sm">
+            <p>数据由 <code class="bg-gray-100 px-1 rounded">https://img2color-go.vercel.app</code> 提供</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const imageUrlInput = document.getElementById('imageUrl');
+            const fetchColorBtn = document.getElementById('fetchColorBtn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+            const previewImage = document.getElementById('previewImage');
+            const colorDisplay = document.getElementById('colorDisplay');
+            const colorValue = document.getElementById('colorValue');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // 验证URL是否有效
+            const isValidUrl = (url) => {
+                try {
+                    new URL(url);
+                    return url.startsWith('http://') || url.startsWith('https://');
+                } catch (e) {
+                    return false;
+                }
+            };
+            
+            // 获取主色调
+            const fetchPrimaryColor = async () => {
+                const url = imageUrlInput.value.trim();
+                
+                // 验证输入
+                if (!url) {
+                    showError('请输入图片URL');
+                    return;
+                }
+                
+                if (!isValidUrl(url)) {
+                    showError('请输入有效的图片URL（需以http://或https://开头）');
+                    return;
+                }
+                
+                // 显示加载状态
+                loading.classList.remove('hidden');
+                error.classList.add('hidden');
+                result.classList.add('hidden');
+                
+                try {
+                    // 调用API
+                    const apiUrl = `https://img2color-go.vercel.app/api?img=${encodeURIComponent(url)}`;
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`API请求失败: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // 验证返回数据
+                    if (!data.RGB || !data.RGB.startsWith('#')) {
+                        throw new Error('获取的颜色信息无效');
+                    }
+                    
+                    // 显示结果
+                    displayResult(url, data.RGB);
+                    
+                } catch (err) {
+                    console.error('获取颜色失败:', err);
+                    showError(`获取失败: ${err.message || '请检查图片URL是否有效'}`);
+                } finally {
+                    loading.classList.add('hidden');
+                }
+            };
+            
+            // 显示错误信息
+            const showError = (message) => {
+                error.textContent = message;
+                error.classList.remove('hidden');
+                result.classList.add('hidden');
+            };
+            
+            // 显示结果
+            const displayResult = (imageUrl, color) => {
+                // 更新图片预览
+                previewImage.src = imageUrl;
+                previewImage.alt = '图片预览';
+                
+                // 更新颜色展示
+                colorDisplay.style.backgroundColor = color;
+                
+                // 根据颜色亮度设置文字颜色
+                const textColor = getContrastTextColor(color);
+                colorDisplay.style.color = textColor;
+                
+                // 更新颜色值
+                colorValue.textContent = color;
+                
+                // 显示结果区域
+                result.classList.remove('hidden');
+            };
+            
+            // 计算对比文本颜色
+            const getContrastTextColor = (hexColor) => {
+                // 解析十六进制颜色
+                const r = parseInt(hexColor.slice(1, 3), 16);
+                const g = parseInt(hexColor.slice(3, 5), 16);
+                const b = parseInt(hexColor.slice(5, 7), 16);
+                
+                // 计算亮度
+                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                
+                // 亮度大于0.5用黑色，否则用白色
+                return luminance > 0.5 ? '#000000' : '#FFFFFF';
+            };
+            
+            // 复制颜色值
+            const copyToClipboard = () => {
+                const color = colorValue.textContent;
+                navigator.clipboard.writeText(color).then(() => {
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fa fa-check"></i><span>已复制</span>';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败，请手动复制');
+                });
+            };
+            
+            // 事件监听
+            fetchColorBtn.addEventListener('click', fetchPrimaryColor);
+            copyBtn.addEventListener('click', copyToClipboard);
+            
+            // 回车键触发
+            imageUrlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    fetchPrimaryColor();
+                }
+            });
+            
+            // 初始加载示例
+            fetchPrimaryColor();
+        });
+    </script>
+</body>
+</html>
+    

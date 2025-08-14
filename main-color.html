@@ -7,45 +7,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
-    <script>
+      <script>
+        // 配置 Tailwind CSS 暗色模式
         tailwind.config = {
+            darkMode: 'class', // 使用 class 模式而非媒体查询
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3B82F6',
+                        primary: '#3B82F6', // 蓝色作为主色调
+                        secondary: '#10B981', // 绿色作为辅助色
                     },
                     fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
                     },
                 }
             }
         }
     </script>
     
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .color-card {
-                @apply rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
-            }
-            .pulse-animation {
-                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            }
-            @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.7; }
-            }
-            .fade-in {
-                animation: fadeIn 0.5s ease-in-out;
-            }
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        }
-    </style>
+
 </head>
 <body class="bg-gray-50 font-inter min-h-screen">
     <div class="container mx-auto px-4 py-12 max-w-2xl">

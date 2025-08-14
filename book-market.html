@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark"> <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的网页收藏</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+      <!-- <script>
+        // 配置 Tailwind CSS 暗色模式
+        tailwind.config = {
+            darkMode: 'class', // 使用 class 模式而非媒体查询
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6', // 蓝色作为主色调
+                        secondary: '#10B981', // 绿色作为辅助色
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script> -->
+    <style>
+        /* A more professional font and a subtle gradient background */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        /* Enhanced card styles with hover effect */
+        .bookmark-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            cursor: grab;
+        }
+        .bookmark-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        }
+        .bookmark-card .card-actions {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .bookmark-card:hover .card-actions {
+            opacity: 1;
+            transform: scale(1);
+        }
+        /* Modal transition styles */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-container {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        /* Loading spinner */
+        .loader {
+            border: 5px solid #4b5563; /* gray-600 */
+            border-top: 5px solid #60a5fa; /* blue-400 */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Toast Notification */
+        .toast {
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            transform: translateY(200%);
+            opacity: 0;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+         /* Sortable.js specific styles */
+        .sortable-ghost {
+            opacity: 0.2;
+            background-color: #3b82f6;
+            border: 2px dashed #60a5fa;
+        }
+        .sortable-chosen {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+
+    <div id="apiKeyModal" class="modal-overlay fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex justify-center items-center p-4 z-50 opacity-0 hidden">
+        <div class="modal-container bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 w-full max-w-md p-6 rounded-xl shadow-2xl">
+            <div class="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mt-4">请输入您的私人密钥</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">为了保护您的数据安全，请提供访问密钥。</p>
+            </div>
+            <form id="apiKeyForm" class="mt-6">
+                <div class="mb-2">
+                    <label for="apiKeyInput" class="sr-only">API Key</label>
+                    <input type="password" id="apiKeyInput" name="apiKey" required placeholder="您的 API Key" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+                </div>
+                <p id="apiKeyError" class="text-red-500 text-sm h-5 text-center"></p>
+                <button type="submit" class="w-full mt-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-5 rounded-lg shadow-lg hover:shadow-sky-500/50 transition duration-300 flex items-center justify-center">
+                    <span id="apiKeySubmitText">授权并进入</span>
+                    <div id="apiKeyLoader" class="loader !w-6 !h-6 !border-4 !border-t-transparent hidden ml-2"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="appWrapper" class="hidden">
+        <header class="bg-white/80 dark:bg-gray-900/50 backdrop-blur-lg shadow-lg sticky top-0 z-20 border-b border-gray-200 dark:border-gray-700">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">我的网页收藏</h1>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="relative hidden sm:block">
+                        <input type="text" id="searchBookmarks" placeholder="搜索..." class="w-48 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-4 pl-10 py-2 rounded-lg border border-transparent focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 focus:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
+                    </div>
+                     <button id="importButton" title="批量导入" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-bold p-2.5 rounded-lg shadow-md transition duration-300 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    </button>
+                    <button id="openModalButton" title="添加收藏" class="bg-sky-500 hover:bg-sky-600 text-white font-bold p-2.5 rounded-lg shadow-lg hover:shadow-sky-500/50 transition duration-300 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                    </button>
+                    <button id="theme-toggle" title="切换主题" class="p-2.5 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                        <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <input type="file" id="importFileInput" class="hidden" accept=".json,.html">
+        <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+             <div id="loadingIndicator" class="fixed inset-0 bg-gray-100 dark:bg-gray-900 bg-opacity-80 flex justify-center items-center z-50 hidden"><div class="loader"></div></div>
+            <div id="bookmarksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </main>
+        <div id="bookmarkModal" class="modal-overlay fixed inset-0 bg-black/60 flex justify-center items-center p-4 z-40 hidden opacity-0">
+             <div class="modal-container bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 w-full max-w-md p-6 rounded-xl shadow-2xl opacity-0 transform scale-95">
+                 <div class="flex justify-between items-center mb-6"><h2 id="modalTitle" class="text-2xl font-bold text-gray-900 dark:text-white"></h2><button id="closeModalButton" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors text-3xl leading-none">&times;</button></div>
+                 <form id="bookmarkForm">
+                    <input type="hidden" id="editBookmarkId" name="id">
+                    <div class="mb-4"><label for="title" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">标题</label><input type="text" id="title" name="title" required class="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"></div>
+                    <div class="mb-4"><label for="url" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">网址 (URL)</label><input type="url" id="url" name="url" required placeholder="https://example.com" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"></div>
+                    <div class="mb-6"><label for="description" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">描述</label><textarea id="description" name="description" rows="3" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"></textarea></div>
+                    <div class="flex justify-end"><button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-sky-500/50 transition duration-300">保存</button></div>
+                </form>
+            </div>
+        </div>
+        <div id="toast" class="toast fixed bottom-5 right-5 text-white py-3 px-6 rounded-lg shadow-2xl"><p id="toastMessage"></p></div>
+    </div>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script> -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let API_KEY = '';
+        const API_URL = 'https://api.4416123.xyz/api/bookmark';
+        let bookmarks = [];
+        let sortableInstance;
+
+        const dom = {
+            appWrapper: document.getElementById('appWrapper'),
+            apiKeyModal: document.getElementById('apiKeyModal'),
+            apiKeyForm: document.getElementById('apiKeyForm'),
+            apiKeyInput: document.getElementById('apiKeyInput'),
+            apiKeyError: document.getElementById('apiKeyError'),
+            apiKeyLoader: document.getElementById('apiKeyLoader'),
+            apiKeySubmitText: document.getElementById('apiKeySubmitText'),
+            grid: document.getElementById('bookmarksGrid'),
+            loadingIndicator: document.getElementById('loadingIndicator'),
+            importButton: document.getElementById('importButton'),
+            importFileInput: document.getElementById('importFileInput'),
+            modal: document.getElementById('bookmarkModal'),
+            modalTitle: document.getElementById('modalTitle'),
+            openModalButton: document.getElementById('openModalButton'),
+            closeModalButton: document.getElementById('closeModalButton'),
+            form: document.getElementById('bookmarkForm'),
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage'),
+            searchInput: document.getElementById('searchBookmarks'),
+            themeToggle: document.getElementById('theme-toggle'),
+            darkIcon: document.getElementById('theme-toggle-dark-icon'),
+            lightIcon: document.getElementById('theme-toggle-light-icon'),
+        };
+
+        const showToast = (message, isError = false) => {
+            dom.toastMessage.textContent = message;
+            dom.toast.className = `toast fixed bottom-5 right-5 text-white py-3 px-6 rounded-lg shadow-2xl ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+            dom.toast.classList.add('show');
+            setTimeout(() => dom.toast.classList.remove('show'), 3000);
+        };
+        
+        const sanitizeHTML = str => {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        };
+
+        const apiCall = async (method, body = null) => {
+            dom.loadingIndicator.style.display = 'flex';
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY }
+                };
+                if (body) options.body = JSON.stringify(body);
+                const response = await fetch(API_URL, options);
+                if (response.status === 401) {
+                    throw new Error('401');
+                }
+                if (!response.ok) {
+                    throw new Error(`${response.status}`);
+                }
+                return method === 'GET' ? await response.json() : true;
+            } finally {
+                dom.loadingIndicator.style.display = 'none';
+            }
+        };
+
+        const fetchBookmarks = async () => {
+            bookmarks = (await apiCall('GET')) || [];
+            renderBookmarks();
+        };
+
+        const saveBookmarks = async () => {
+            try {
+                await apiCall('POST', bookmarks);
+                showToast('数据已成功保存!');
+                renderBookmarks();
+            } catch (error) {
+                console.error("保存收藏失败:", error);
+                showToast('保存收藏失败!', true);
+                await fetchBookmarks(); // Revert state on failure
+            }
+        };
+        
+        const renderBookmarks = () => {
+            const searchTerm = dom.searchInput.value.toLowerCase();
+            const filteredBookmarks = bookmarks.filter(b => b.title.toLowerCase().includes(searchTerm) || b.url.toLowerCase().includes(searchTerm));
+            dom.grid.innerHTML = '';
+            if (filteredBookmarks.length === 0) {
+                 dom.grid.innerHTML = `<div class="col-span-full text-center py-16 px-6"><svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-24 w-24 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12h.01" /></svg><h3 class="mt-2 text-xl font-medium text-gray-700 dark:text-white">${searchTerm ? "没有找到匹配的收藏" : "没有收藏"}</h3><p class="mt-1 text-base text-gray-500 dark:text-gray-400">${searchTerm ? "请尝试不同的搜索词或" : ""}点击右上角“添加收藏”来开始吧！</p></div>`;
+                if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
+                return;
+            }
+            filteredBookmarks.forEach(b => {
+                const card = document.createElement('div');
+                card.className = 'bookmark-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700';
+                card.dataset.id = b.id;
+                // FIXED: Add title attribute to the card's root element for hover tooltip
+                card.title = `${b.title}\n${b.url}`; 
+                card.innerHTML = `<div class="card-actions absolute top-3 right-3 flex space-x-2"><button data-id="${b.id}" class="edit-btn bg-gray-200 dark:bg-gray-900/50 hover:bg-blue-500 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-white transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L13.196 5.196z" /></svg></button><button data-id="${b.id}" class="delete-btn bg-gray-200 dark:bg-gray-900/50 hover:bg-red-600 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-white transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button></div><a href="${sanitizeHTML(b.url)}" target="_blank" rel="noopener noreferrer" class="block p-5"><div class="flex items-center space-x-4"><img src="https://favicon.im/zh/${new URL(b.url).host}" alt="${sanitizeHTML(b.title)} favicon" class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-white/10 p-1 object-contain" onerror="this.src='https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(b.url)}'"><div class="flex-1 min-w-0"><p class="font-bold text-lg text-gray-800 dark:text-white truncate" title="${sanitizeHTML(b.title)}">${sanitizeHTML(b.title)}</p><p class="text-gray-500 dark:text-gray-400 text-sm truncate" title="${sanitizeHTML(b.description)}">${sanitizeHTML(b.description) || '没有描述'}</p></div></div></a>`;
+                dom.grid.appendChild(card);
+            });
+            // if (sortableInstance) sortableInstance.destroy();
+            // sortableInstance = new Sortable(dom.grid, { animation: 150, ghostClass: 'sortable-ghost', onEnd: async evt => { const [moved] = bookmarks.splice(evt.oldIndex, 1); bookmarks.splice(evt.newIndex, 0, moved); await saveBookmarks(); } });
+        };
+        
+        const handleFormSubmit = async e => {
+            e.preventDefault();
+            const id = Number(dom.form.elements.id.value);
+            const data = { title: dom.form.elements.title.value, url: dom.form.elements.url.value, description: dom.form.elements.description.value };
+            if (id) bookmarks = bookmarks.map(b => b.id === id ? { ...b, ...data } : b);
+            else bookmarks.unshift({ id: Date.now(), ...data });
+            closeModal();
+            await saveBookmarks();
+        };
+
+        const handleDeleteBookmark = async id => {
+            bookmarks = bookmarks.filter(b => b.id !== Number(id));
+            await saveBookmarks();
+        };
+
+        const handleFileImport = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async event => {
+                try {
+                    let importedData = [];
+                    const fileExt = file.name.split('.').pop().toLowerCase();
+                    if (fileExt === 'json') importedData = JSON.parse(event.target.result);
+                    else if (fileExt === 'html') {
+                        const doc = new DOMParser().parseFromString(event.target.result, "text/html");
+                        doc.querySelectorAll("dt > a").forEach(link => importedData.push({ url: link.href, title: link.textContent.trim(), description: '' }));
+                    } else throw new Error("不支持的文件格式。");
+                    if (!Array.isArray(importedData)) throw new Error("文件内容格式不正确。");
+                    
+                    const existingUrls = new Set(bookmarks.map(b => b.url));
+                    let newCount = 0;
+                    importedData.forEach((item, i) => {
+                        if (item && item.url && !existingUrls.has(item.url)) {
+                            bookmarks.push({ id: item.id || Date.now() + i, title: item.title || '无标题', url: item.url, description: item.description || '' });
+                            existingUrls.add(item.url);
+                            newCount++;
+                        }
+                    });
+                    showToast(newCount > 0 ? `成功导入并去重 ${newCount} 个新收藏！正在同步...` : '没有新的收藏可以导入。', newCount === 0);
+                    if (newCount > 0) await saveBookmarks();
+                } catch (error) { showToast(`导入失败: ${error.message}`, true); } finally { importFileInput.value = ''; }
+            };
+            reader.readAsText(file);
+        };
+        
+        dom.grid.addEventListener('click', e => {
+            const editButton = e.target.closest('.edit-btn');
+            const deleteButton = e.target.closest('.delete-btn');
+            if (editButton) openModal(bookmarks.find(b => b.id === Number(editButton.dataset.id)));
+            if (deleteButton && confirm('确定要删除这个收藏吗?')) handleDeleteBookmark(deleteButton.dataset.id);
+        });
+
+        const openModal = (bookmark = null) => {
+            dom.form.reset();
+            dom.form.elements.id.value = bookmark ? bookmark.id : '';
+            dom.modalTitle.textContent = bookmark ? '编辑收藏' : '添加新收藏';
+            if (bookmark) {
+                dom.form.elements.title.value = bookmark.title;
+                dom.form.elements.url.value = bookmark.url;
+                dom.form.elements.description.value = bookmark.description;
+            }
+            dom.modal.classList.remove('hidden');
+            setTimeout(() => {
+                dom.modal.classList.remove('opacity-0');
+                dom.modal.querySelector('.modal-container').classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        };
+        const closeModal = () => {
+            dom.modal.classList.add('opacity-0');
+            dom.modal.querySelector('.modal-container').classList.add('opacity-0', 'scale-95');
+            setTimeout(() => dom.modal.classList.add('hidden'), 300);
+        };
+        
+        const applyTheme = (theme) => {
+            // FIXED: Use explicit add/remove for robustness
+            // if (theme === 'dark') {
+            //     document.documentElement.classList.add('dark');
+            //     dom.darkIcon.classList.remove('hidden');
+            //     dom.lightIcon.classList.add('hidden');
+            // } else {
+            //     document.documentElement.classList.remove('dark');
+            //     dom.lightIcon.classList.remove('hidden');
+            //     dom.darkIcon.classList.add('hidden');
+            // }
+        };
+
+        const toggleTheme = () => {
+            const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        };
+
+        const initializeApp = async (key, isAutoLogin = false) => {
+            API_KEY = key;
+            const submitBtn = dom.apiKeyForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            dom.apiKeyLoader.classList.remove('hidden');
+            dom.apiKeySubmitText.textContent = '验证中...';
+            dom.apiKeyError.textContent = '';
+            
+            try {
+                await fetchBookmarks();
+                if (!isAutoLogin) {
+                    const keyData = { key: API_KEY, timestamp: Date.now() };
+                    localStorage.setItem('apiKeyData', JSON.stringify(keyData));
+                }
+                dom.apiKeyModal.classList.add('opacity-0');
+                setTimeout(() => {
+                    dom.apiKeyModal.style.display = 'none';
+                    dom.appWrapper.classList.remove('hidden');
+                }, 300);
+            } catch (error) {
+                if (error.message.includes('401')) {
+                    if (isAutoLogin) localStorage.removeItem('apiKeyData');
+                    showApiKeyModal(true, '密钥错误或已失效，请重新输入。');
+                } else {
+                    showApiKeyModal(true, '无法连接服务器，请检查网络。');
+                }
+            } finally {
+                submitBtn.disabled = false;
+                dom.apiKeyLoader.classList.add('hidden');
+                dom.apiKeySubmitText.textContent = '授权并进入';
+            }
+        };
+
+        const showApiKeyModal = (show, message = '') => {
+            dom.apiKeyError.textContent = message;
+            if(show) {
+                dom.apiKeyInput.value = '';
+                dom.apiKeyModal.classList.remove('hidden');
+                setTimeout(() => dom.apiKeyModal.classList.remove('opacity-0'), 10);
+            }
+        };
+
+        const checkStoredKey = () => {
+            const storedKeyData = localStorage.getItem('apiKeyData');
+            if (storedKeyData) {
+                const { key, timestamp } = JSON.parse(storedKeyData);
+                const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+                if (Date.now() - timestamp > thirtyDays) {
+                    localStorage.removeItem('apiKeyData');
+                    showApiKeyModal(true, '密钥已过期，请重新登录。');
+                } else {
+                    initializeApp(key, true);
+                }
+            } else {
+                showApiKeyModal(true);
+            }
+        };
+        
+        // --- EVENT LISTENERS & INITIALIZATION ---
+        dom.openModalButton.addEventListener('click', () => openModal());
+        dom.closeModalButton.addEventListener('click', closeModal);
+        dom.modal.addEventListener('click', e => e.target === dom.modal && closeModal());
+        dom.form.addEventListener('submit', handleFormSubmit);
+        dom.importButton.addEventListener('click', () => dom.importFileInput.click());
+        dom.importFileInput.addEventListener('change', handleFileImport);
+        dom.searchInput.addEventListener('input', renderBookmarks);
+        dom.themeToggle.addEventListener('click', toggleTheme);
+        
+        dom.apiKeyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (dom.apiKeyInput.value.trim()) {
+                initializeApp(dom.apiKeyInput.value.trim());
+            } else {
+                dom.apiKeyError.textContent = "密钥不能为空！";
+            }
+        });
+        
+        // Initialize theme based on localStorage or OS preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            applyTheme('dark');
+        } else {
+            applyTheme('light');
+        }
+        
+        checkStoredKey();
+    });
+</script>
+</body>
+</html>

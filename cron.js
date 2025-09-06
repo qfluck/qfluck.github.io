@@ -69,9 +69,6 @@ async function fetchIpList() {
 
 
 
+const linkList = JSON.parse(atob(`WyJ0cm9qYW46Ly8xMjNqaWFjaGFvQHd3dy52aXNhLmNvbS5zZzo0NDM/c2VjdXJpdHk9dGxzJnNuaT12cG4tdHJvamFuLjQ0MTYxMjMueHl6JmZwPXJhbmRvbSZ0eXBlPXdzJmhvc3Q9dnBuLXRyb2phbi40NDE2MTIzLnh5eiZwYXRoPSUyRiUzRmVkJTNEMjU2MCN2cG4tdHJvamFuLjQ0MTYxMjMueHl6Iiwidmxlc3M6Ly9jNzAxZDcxOC1mYjRjLTQ5YzMtYjViMy1lNmEyMmMyYzNhNGRAY2YuNDQxNjEyMy54eXo6NDQzP2VuY3J5cHRpb249bm9uZSZzZWN1cml0eT10bHMmc25pPWpjLXhoLjQ0MTYxMjMueHl6JnR5cGU9eGh0dHAmcGF0aD0lMkY0OWMzJm1vZGU9YXV0byN4aHR0cC12bGVzcy1zanozMGNxOCIsInZsZXNzOi8vMjViOTA2YWUtYjhjMi00NjEyLWM1OTUtMTNjNGQ4Nzg5N2NhQGNmLjQ0MTYxMjMueHl6OjQ0Mz9lbmNyeXB0aW9uPW5vbmUmc2VjdXJpdHk9dGxzJnR5cGU9d3MmaG9zdD1jZi40NDE2MTIzLnh5eiZwYXRoPSUyRmNmJTNGZWQlM0QyMDQ4I2NmLXZsZXNzIl0=`));
 
-const linkList = [
-  "vless://b3bf87f8-4e28-4977-aa43-96e23de62518@usa.visa.com:443?encryption=none&security=tls&sni=vpn-vless.4416123.xyz&fp=randomized&type=ws&host=vpn-vless.4416123.xyz&path=%2F%3Fed%3D2560#CF_V8_usa.visa.com_443",
-  "vless://25b906ae-b8c2-4612-c595-13c4d87897ca@cf.4416123.xyz:443?encryption=none&security=tls&type=ws&host=cf.4416123.xyz&path=%2Fcf%3Fed%3D2048#cf-vless",
-  "trojan://123jiachao@www.visa.com.sg:443?security=tls&sni=vpn-trojan.4416123.xyz&fp=random&type=ws&host=vpn-trojan.4416123.xyz&path=%2F%3Fed%3D2560#vpn-trojan.4416123.xyz",
-];
+

@@ -4,165 +4,258 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <title>个人门户</title>
+    <title>个人门户 | 纯净版</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
-         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    
     <style>
-        /* Custom styles for card hover effect */
-        .card-link {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        /* --- 1. 变量与基础重置 --- */
+        :root {
+            --primary: #0ea5e9;
+            --primary-hover: #2563eb;
+            --bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: rgba(255, 255, 255, 0.7);
         }
-        .card-link:hover {
-            transform: translateY(-5px); /* Lift card on hover */
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* Add a more pronounced shadow */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- 2. 布局容器 --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        /* --- 3. 头部装饰 --- */
+        #greeting {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(to right, var(--primary), var(--primary-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .time-badge {
+            display: inline-block;
+            padding: 6px 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9rem;
+            color: #0369a1;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- 4. 卡片网格布局 --- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        /* --- 5. 玻璃拟态卡片 --- */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .icon-box {
+            background: #e0f2fe;
+            padding: 10px;
+            border-radius: 12px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .card:hover .icon-box {
+            background: var(--primary);
+            color: white;
+        }
+
+        .icon-box svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        .card:hover h2 {
+            color: var(--primary);
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* --- 6. 页脚 --- */
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding-bottom: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .divider {
+            width: 40px;
+            height: 3px;
+            background: var(--primary);
+            opacity: 0.3;
+            margin: 0 auto 20px;
+            border-radius: 2px;
+        }
+
+        /* --- 7. 响应式微调 --- */
+        @media (max-width: 640px) {
+            #greeting { font-size: 2.2rem; }
+            .container { padding: 20px; }
+            .card-grid { gap: 16px; }
         }
     </style>
 </head>
 
-<body class="bg-slate-100 text-slate-800 selection:bg-sky-300 selection:text-sky-900">
+<body>
 
-    <div class="container mx-auto p-4 sm:p-8 max-w-4xl">
-
-        <header class="text-center mb-10">
-            <h1 id="greeting" class="text-4xl sm:text-5xl font-bold text-slate-900">欢迎光临</h1>
-            <p id="datetime" class="text-slate-500 mt-2">正在加载时间...</p>
+    <div class="container">
+        <header>
+            <h1 id="greeting">你好</h1>
+            <div class="time-badge">
+                <span id="datetime">加载中...</span>
+            </div>
         </header>
 
         <main>
-            <!-- Card container will be dynamically filled by JavaScript -->
-            <div id="card-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Cards will be inserted here -->
-            </div>
+            <div id="card-container" class="card-grid"></div>
         </main>
 
-        <footer class="text-center mt-12">
-            <p class="text-slate-500 text-sm">&copy; <span id="currentYear"></span> 个人网站. All Rights Reserved.</p>
+        <footer>
+            <div class="divider"></div>
+            <p>&copy; <span id="currentYear"></span> 个人门户 · 纯净美学</p>
         </footer>
     </div>
 
 <script>
-// Wait for the DOM to be fully loaded before executing the script
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- Card Data Configuration ---
-    // To add, remove, or edit cards, just modify this JSON array.
+    // --- 配置数据 ---
     const cardData = [
         {
             href: "/",
-            icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5"/></svg>`,
+            icon: `M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5`,
             title: "网站主页",
             description: "返回本站的根目录或起始页。"
         },
         {
-            href: "/jiachao.txt",
-            icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" /></svg>`,
-            title: "V2Ray 配置",
-            description: "查看或下载最新的V2Ray配置文件。"
-        },
-        {
             href: "/encrypt.html",
-            icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>`,
+            icon: `M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z`,
             title: "加密工具",
-            description: "一个用于文本对称加密和解密的在线工具。"
-        },
-        {
-            href: "/bestVless.html",
-            icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>`,
-            title: "VLESS 优选",
-            description: "使用优选IP批量生成VLESS链接的工具。"
-        },
-        // {
-        //     href: "https://zip.baipiao.eu.org",
-        //     icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m6.75 18v-3.375c0-.621-.504-1.125-1.125-1.125h-2.25c-.621 0-1.125.504-1.125 1.125V21"/></svg>`,
-        //     title: "优选IP库",
-        //     description: "访问外部的优选IP地址库资源网站。"
-        // },
-        {
-            href: "/VO.html",
-            icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>`,
-            title: "实体类生成器",
-            description: "根据JSON数据自动生成多语言实体类。"
-        },
-        {
-            href: "/main-color.html",
-            icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m9-9H3m18 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-            title: "主色调提取工具",
-            description: "一个用于提取图片主色调的工具。"
+            description: "文本对称加密和解密在线工具。"
         },
         {
             href: "/book-market.html",
-            icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75V21m0-14.25a9 9 0 100 18 9 9 0 000-18zM3.75 12h16.5"/></svg>`,
+            icon: `M12 6.75V21m0-14.25a9 9 0 100 18 9 9 0 000-18zM3.75 12h16.5`,
             title: "个人收藏",
-            description: "个人收藏网址"
+            description: "探索我收藏的精彩内容。"
         },
-                {
+        {
             href: "/book.html",
-            icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75V21m0-14.25a9 9 0 100 18 9 9 0 000-18zM3.75 12h16.5"/></svg>`,
+            icon: `M12 21V4.5l7.5-3v13.5l-7.5 3zm0 0V4.5l-7.5-3v13.5l7.5 3z`,
             title: "投资书籍",
-            description: "投资书籍收藏"
+            description: "关于金钱与智慧的进阶之路。"
         }
     ];
 
-    // --- Dynamic Card Generation ---
-    function generateCards() {
-        const container = document.getElementById('card-container');
-        if (!container) return; // Guard clause
-        
-        container.innerHTML = ''; // Clear existing cards
+    // --- 动态生成 ---
+    const container = document.getElementById('card-container');
+    container.innerHTML = cardData.map(card => `
+        <a href="${card.href}" target="_blank" class="card">
+            <div class="card-header">
+                <div class="icon-box">
+                    <svg viewBox="0 0 24 24" stroke-width="1.5">
+                        <path d="${card.icon}" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h2>${card.title}</h2>
+            </div>
+            <p>${card.description}</p>
+        </a>
+    `).join('');
 
-        cardData.forEach(function(card) {
-            const cardHtml = `
-                <a href="${card.href}" target="_blank" class="card-link block bg-white p-6 rounded-xl shadow-md">
-                    <div class="flex items-center mb-3">
-                        ${card.icon}
-                        <h2 class="text-xl font-semibold">${card.title}</h2>
-                    </div>
-                    <p class="text-slate-600">${card.description}</p>
-                </a>
-            `;
-            container.innerHTML += cardHtml;
-        });
-    }
-
-
-    // --- Dynamic Greeting and Clock ---
-    function updateTime() {
+    // --- 时间与问候 ---
+    const updateTime = () => {
         const now = new Date();
-        const year = now.getFullYear();
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-        const date = now.getDate().toString().padStart(2, '0');
         const hours = now.getHours();
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        const dayOfWeek = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][now.getDay()];
-
-        const datetimeEl = document.getElementById('datetime');
-        const currentYearEl = document.getElementById('currentYear');
-        const greetingEl = document.getElementById('greeting');
         
-        if (datetimeEl) datetimeEl.textContent = `${year}-${month}-${date} ${hours}:${minutes}:${seconds} ${dayOfWeek}`;
-        if (currentYearEl) currentYearEl.textContent = year.toString();
+        document.getElementById('datetime').textContent = now.toLocaleString('zh-CN', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false, weekday: 'long'
+        });
+        document.getElementById('currentYear').textContent = now.getFullYear();
 
-        let greetingText = '';
-        if (hours >= 5 && hours < 12) {
-            greetingText = '早上好!';
-        } else if (hours >= 12 && hours < 14) {
-            greetingText = '中午好!';
-        } else if (hours >= 14 && hours < 18) {
-            greetingText = '下午好!';
-        } else {
-            greetingText = '晚上好!';
-        }
-        if (greetingEl) greetingEl.textContent = greetingText;
-    }
+        let greeting = '晚上好';
+        if (hours >= 5 && hours < 11) greeting = '早上好';
+        else if (hours >= 11 && hours < 13) greeting = '中午好';
+        else if (hours >= 13 && hours < 18) greeting = '下午好';
+        
+        document.getElementById('greeting').textContent = `${greeting}!`;
+    };
 
-    // --- Initial Calls ---
-    generateCards(); // Generate cards on page load
-    updateTime(); // Call once immediately
-    setInterval(updateTime, 1000); // Update time every second
+    updateTime();
+    setInterval(updateTime, 1000);
 });
 </script>
 

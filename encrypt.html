@@ -1,338 +1,256 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetric Encryption Tool - Algorithm Choice</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Symmetric Crypto Tool | 原生纯净版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
-         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
     <style>
-        /* Custom font */
-        body {
-            font-family: 'Inter', sans-serif;
+        /* --- 1. 定义设计变量 --- */
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --success: #059669;
+            --success-hover: #047857;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border: #e2e8f0;
+            --radius-xl: 1.5rem;
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
-        /* Style for the message box */
-        .message-box {
+
+        /* --- 2. 基础布局 --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-gradient);
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        /* --- 3. 头部样式 --- */
+        header {
+            background: #0f172a;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        header h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.025em; }
+        header p { color: #94a3b8; font-size: 0.9rem; margin-top: 8px; }
+
+        /* --- 4. 表单与控制区 --- */
+        .content-body { padding: 40px; }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 0.85rem; font-weight: 700; color: #475569; }
+
+        input, select, textarea {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: white;
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+        }
+
+        /* --- 5. 操作区网格 --- */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .text-area-wrapper { display: flex; flex-direction: column; gap: 12px; }
+        
+        .area-header { display: flex; justify-content: space-between; align-items: center; }
+        .copy-btn { 
+            font-size: 0.75rem; color: var(--primary); font-weight: 600; 
+            cursor: pointer; background: none; border: none; 
+        }
+
+        textarea { resize: none; background: #f8fafc; }
+
+        /* --- 6. 按钮样式 --- */
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn-encrypt { background: var(--primary); }
+        .btn-encrypt:hover { background: var(--primary-hover); }
+        .btn-decrypt { background: var(--success); }
+        .btn-decrypt:hover { background: var(--success-hover); }
+
+        /* --- 7. 消息弹窗 --- */
+        #toast {
             position: fixed;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+            padding: 12px 24px;
+            background: #1e293b;
+            color: white;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+            z-index: 100;
             opacity: 0;
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-            pointer-events: none; /* Allow clicks through when hidden */
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
         }
-        .message-box.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-            pointer-events: auto;
-        }
-        .message-box.success {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-        .message-box.error {
-            background-color: #f44336; /* Red */
-            color: white;
-        }
-        /* Ensure textareas are resizable vertically only */
-        textarea {
-            resize: vertical;
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+
+        /* 响应式 */
+        @media (max-width: 640px) {
+            .content-body { padding: 25px; }
+            header { padding: 30px 15px; }
         }
     </style>
 </head>
-<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4 selection:bg-sky-300 selection:text-sky-900">
 
-    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-2xl">
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-slate-800">Symmetric Encryption Tool</h1>
-            <p class="text-sm text-slate-600 mt-1">Choose your algorithm, encrypt & decrypt.</p>
+<body>
+
+    <div class="main-container">
+        <header>
+            <h1>对称加密工具</h1>
+            <p>私密、安全、纯本地运行的加解密方案</p>
         </header>
 
-        <div class="mb-6">
-            <label for="encryptionKey" class="block text-sm font-semibold text-slate-700 mb-1">Encryption/Decryption Key:</label>
-            <input type="password" id="encryptionKey" placeholder="Enter your secret key"
-                   class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out">
-            <p class="text-xs text-slate-500 mt-1">Keep this key secret. It's used for both encryption and decryption.</p>
-        </div>
-
-        <div class="mb-6">
-            <label for="encryptionAlgorithm" class="block text-sm font-semibold text-slate-700 mb-1">Encryption Method:</label>
-            <select id="encryptionAlgorithm"
-                    class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out">
-                <option value="AES" selected>AES (Advanced Encryption Standard)</option>
-                <option value="DES">DES (Data Encryption Standard)</option>
-                <option value="TripleDES">TripleDES (3DES)</option>
-                <option value="Rabbit">Rabbit (Stream Cipher)</option>
-                <option value="RC4">RC4 (Stream Cipher)</option>
-            </select>
-        </div>
-
-
-        <div class="grid md:grid-cols-2 gap-6 mb-6">
-            <div class="space-y-3">
-                <label for="plainText" class="block text-sm font-semibold text-slate-700">Plain Text:</label>
-                <textarea id="plainText" rows="6" placeholder="Enter text to encrypt..."
-                          class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out"></textarea>
-                <div class="flex space-x-2">
-                    <button onclick="handleEncrypt()"
-                            class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50">
-                        Encrypt
-                    </button>
-                    <button onclick="copyToClipboard('plainText', 'Plain Text')"
-                            class="w-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-50">
-                        Copy
-                    </button>
+        <div class="content-body">
+            <section class="settings-grid">
+                <div class="input-group">
+                    <label>加密/解密密钥</label>
+                    <input type="password" id="key" placeholder="在此输入您的密钥...">
                 </div>
-            </div>
-
-            <div class="space-y-3">
-                <label for="encryptedText" class="block text-sm font-semibold text-slate-700">Encrypted Text (Ciphertext):</label>
-                <textarea id="encryptedText" rows="6" placeholder="Enter text to decrypt or see encrypted output..."
-                          class="w-full px-4 py-2.5 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out"></textarea>
-                <div class="flex space-x-2">
-                    <button onclick="handleDecrypt()"
-                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50">
-                        Decrypt
-                    </button>
-                    <button onclick="copyToClipboard('encryptedText', 'Encrypted Text')"
-                            class="w-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-50">
-                        Copy
-                    </button>
+                <div class="input-group">
+                    <label>算法协议</label>
+                    <select id="algo">
+                        <option value="AES">AES (推荐)</option>
+                        <option value="DES">DES</option>
+                        <option value="TripleDES">TripleDES</option>
+                        <option value="Rabbit">Rabbit</option>
+                        <option value="RC4">RC4</option>
+                    </select>
                 </div>
-            </div>
+            </section>
+
+            <section class="tools-grid">
+                <div class="text-area-wrapper">
+                    <div class="area-header">
+                        <label class="input-group label">原始明文</label>
+                        <button class="copy-btn" onclick="copyText('plain')">复制内容</button>
+                    </div>
+                    <textarea id="plain" rows="7" placeholder="输入需要加密的文本..."></textarea>
+                    <button class="btn btn-encrypt" onclick="process('encrypt')">加密文本 ↓</button>
+                </div>
+
+                <div class="text-area-wrapper">
+                    <div class="area-header">
+                        <label class="input-group label">结果密文</label>
+                        <button class="copy-btn" onclick="copyText('cipher')">复制结果</button>
+                    </div>
+                    <textarea id="cipher" rows="7" placeholder="等待输出或粘贴密文..."></textarea>
+                    <button class="btn btn-decrypt" onclick="process('decrypt')">解密文本 ↑</button>
+                </div>
+            </section>
         </div>
-
-        <div id="messagePopup" class="message-box"></div>
-
-        <footer class="text-center mt-8">
-            <p class="text-xs text-slate-500">Utilizing various symmetric encryption algorithms via CryptoJS.</p>
-        </footer>
     </div>
 
+    <div id="toast">提示消息</div>
+
 <script>
-    // Get DOM elements
-    const keyInput = document.getElementById('encryptionKey');
-    const plainTextInput = document.getElementById('plainText');
-    const encryptedTextInput = document.getElementById('encryptedText');
-    const algorithmSelect = document.getElementById('encryptionAlgorithm');
-    const messagePopup = document.getElementById('messagePopup');
-    let messageTimeout; // To manage the timeout for hiding messages
+    // --- 核心逻辑 ---
+    function process(mode) {
+        const key = document.getElementById('key').value.trim();
+        const algo = document.getElementById('algo').value;
+        const plainEl = document.getElementById('plain');
+        const cipherEl = document.getElementById('cipher');
 
-    /**
-     * Displays a message in the message popup.
-     * @param {string} text - The message text.
-     * @param {string} type - 'success' or 'error'.
-     * @param {number} duration - How long to show the message in milliseconds.
-     */
-    function showMessage(text, type = 'success', duration = 3000) {
-        if (messageTimeout) {
-            clearTimeout(messageTimeout);
-        }
-        messagePopup.textContent = text;
-        messagePopup.className = `message-box ${type} show`;
-        messageTimeout = setTimeout(() => {
-            messagePopup.classList.remove('show');
-            setTimeout(() => {
-                if (!messagePopup.classList.contains('show')) {
-                     messagePopup.className = 'message-box';
-                }
-            }, 300);
-        }, duration);
-    }
+        if (!key) return showToast('请先输入密钥', 'error');
 
-    /**
-     * Validates key and text inputs.
-     * @param {string} key - The encryption/decryption key.
-     * @param {string} text - The text to be processed.
-     * @param {string} fieldName - Name of the text field for error messages.
-     * @returns {boolean} - True if valid, false otherwise.
-     */
-    function validateInput(key, text, fieldName = "Text") {
-        if (!key.trim()) {
-            showMessage('Encryption key cannot be empty.', 'error');
-            keyInput.focus();
-            return false;
-        }
-        if (!text.trim()) {
-            showMessage(`${fieldName} cannot be empty.`, 'error');
-            if (fieldName === "Plain Text") plainTextInput.focus();
-            else encryptedTextInput.focus();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Encrypts text using the selected algorithm.
-     * @param {string} text - The plain text to encrypt.
-     * @param {string} key - The encryption key.
-     * @param {string} algorithm - The selected encryption algorithm ('AES', 'DES', 'TripleDES', 'Rabbit', 'RC4').
-     * @returns {string|null} - Encrypted string or null on error.
-     */
-    function encrypt(text, key, algorithm) {
         try {
-            let encrypted;
-            switch (algorithm) {
-                case 'AES':
-                    encrypted = CryptoJS.AES.encrypt(text, key);
-                    break;
-                case 'DES':
-                    encrypted = CryptoJS.DES.encrypt(text, key);
-                    break;
-                case 'TripleDES':
-                    encrypted = CryptoJS.TripleDES.encrypt(text, key);
-                    break;
-                case 'Rabbit':
-                    encrypted = CryptoJS.Rabbit.encrypt(text, key);
-                    break;
-                case 'RC4':
-                    encrypted = CryptoJS.RC4.encrypt(text, key);
-                    break;
-                default:
-                    showMessage('Invalid encryption algorithm selected.', 'error');
-                    return null;
-            }
-            return encrypted.toString();
-        } catch (error) {
-            console.error(`Encryption error with ${algorithm}:`, error);
-            showMessage(`Encryption failed using ${algorithm}. Check console for details.`, 'error');
-            return null;
-        }
-    }
-
-    /**
-     * Decrypts text using the selected algorithm.
-     * @param {string} encryptedText - The ciphertext to decrypt.
-     * @param {string} key - The decryption key.
-     * @param {string} algorithm - The selected encryption algorithm.
-     * @returns {string|null} - Decrypted string or null on error.
-     */
-    function decrypt(encryptedText, key, algorithm) {
-        try {
-            let decrypted;
-            switch (algorithm) {
-                case 'AES':
-                    decrypted = CryptoJS.AES.decrypt(encryptedText, key);
-                    break;
-                case 'DES':
-                    decrypted = CryptoJS.DES.decrypt(encryptedText, key);
-                    break;
-                case 'TripleDES':
-                    decrypted = CryptoJS.TripleDES.decrypt(encryptedText, key);
-                    break;
-                case 'Rabbit':
-                    decrypted = CryptoJS.Rabbit.decrypt(encryptedText, key);
-                    break;
-                case 'RC4':
-                    decrypted = CryptoJS.RC4.decrypt(encryptedText, key);
-                    break;
-                default:
-                    showMessage('Invalid decryption algorithm selected.', 'error');
-                    return null;
-            }
-            const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
-            if (!decryptedText && encryptedText) { // Check if decryption resulted in empty string but input was not empty
-                showMessage(`Decryption failed with ${algorithm}. This might be due to an incorrect key or corrupted data.`, 'error');
-                return null;
-            }
-            return decryptedText;
-        } catch (error) {
-            console.error(`Decryption error with ${algorithm}:`, error);
-            showMessage(`Decryption failed using ${algorithm}. Check console or if the key is correct.`, 'error');
-            return null;
-        }
-    }
-
-    /**
-     * Handles the encryption process.
-     */
-    function handleEncrypt() {
-        const key = keyInput.value;
-        const originalText = plainTextInput.value;
-        const selectedAlgorithm = algorithmSelect.value;
-
-        if (!validateInput(key, originalText, "Plain Text")) {
-            return;
-        }
-
-        const encryptedResult = encrypt(originalText, key, selectedAlgorithm);
-        if (encryptedResult !== null) {
-            encryptedTextInput.value = encryptedResult;
-            showMessage(`Text encrypted successfully using ${selectedAlgorithm}!`, 'success');
-        }
-    }
-
-    /**
-     * Handles the decryption process.
-     */
-    function handleDecrypt() {
-        const key = keyInput.value;
-        const textToDecrypt = encryptedTextInput.value;
-        const selectedAlgorithm = algorithmSelect.value;
-
-        if (!validateInput(key, textToDecrypt, "Encrypted Text")) {
-            return;
-        }
-
-        const decryptedResult = decrypt(textToDecrypt, key, selectedAlgorithm);
-        if (decryptedResult !== null) {
-            plainTextInput.value = decryptedResult;
-            showMessage(`Text decrypted successfully using ${selectedAlgorithm}!`, 'success');
-        }
-    }
-
-    /**
-     * Copies text from a specified textarea to the clipboard.
-     * @param {string} elementId - The ID of the textarea.
-     * @param {string} fieldName - The name of the field being copied (for messages).
-     */
-    function copyToClipboard(elementId, fieldName) {
-        const element = document.getElementById(elementId);
-        if (!element.value.trim()) {
-            showMessage(`${fieldName} is empty. Nothing to copy.`, 'error', 2000);
-            return;
-        }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(element.value)
-                .then(() => {
-                    showMessage(`${fieldName} copied to clipboard!`, 'success', 2000);
-                })
-                .catch(err => {
-                    console.warn('Async clipboard copy failed, falling back to execCommand:', err);
-                    fallbackCopyToClipboard(element, fieldName);
-                });
-        } else {
-            fallbackCopyToClipboard(element, fieldName);
-        }
-    }
-
-    /**
-     * Fallback method to copy text to clipboard using document.execCommand.
-     * @param {HTMLTextAreaElement} element - The textarea element.
-     * @param {string} fieldName - The name of the field being copied.
-     */
-    function fallbackCopyToClipboard(element, fieldName) {
-        element.select();
-        element.setSelectionRange(0, 99999);
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                showMessage(`${fieldName} copied to clipboard! (fallback method)`, 'success', 2000);
+            if (mode === 'encrypt') {
+                const text = plainEl.value.trim();
+                if (!text) return showToast('请输入明文');
+                const encrypted = CryptoJS[algo].encrypt(text, key).toString();
+                cipherEl.value = encrypted;
+                showToast(`使用 ${algo} 加密成功`);
             } else {
-                showMessage('Failed to copy text using fallback method.', 'error');
+                const text = cipherEl.value.trim();
+                if (!text) return showToast('请输入密文');
+                const decrypted = CryptoJS[algo].decrypt(text, key).toString(CryptoJS.enc.Utf8);
+                if (!decrypted) throw new Error();
+                plainEl.value = decrypted;
+                showToast(`使用 ${algo} 解密成功`);
             }
-        } catch (err) {
-            console.error('Fallback copy to clipboard failed:', err);
-            showMessage('Could not copy text. Please copy manually.', 'error');
+        } catch (e) {
+            showToast('操作失败：请检查密钥或数据格式', 'error');
         }
-        window.getSelection().removeAllRanges();
     }
 
+    // --- 辅助功能 ---
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    async function copyText(id) {
+        const content = document.getElementById(id).value;
+        if (!content) return showToast('内容为空');
+        try {
+            await navigator.clipboard.writeText(content);
+            showToast('已复制到剪切板');
+        } catch (err) {
+            document.getElementById(id).select();
+            document.execCommand('copy');
+            showToast('已复制 (兼容模式)');
+        }
+    }
 </script>
 </body>
 </html>

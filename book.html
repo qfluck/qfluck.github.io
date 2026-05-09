@@ -1,112 +1,292 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>book</title>
-<style>
-    /* 1. 基础重置与背景 */
-    body {
-        font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-        background-color: #f4f7f6;
-        color: #333;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 40px 20px;
-        margin: 0;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="本地 PDF 书籍阅读入口。" />
+    <title>投资书籍 | 阅读清单</title>
+    <style>
+        :root {
+            --primary: #0f766e;
+            --accent: #b45309;
+            --bg: #f7faf9;
+            --panel: #ffffff;
+            --text: #10201d;
+            --muted: #63736f;
+            --border: #dbe7e4;
+            --radius: 8px;
+            --shadow: 0 12px 30px rgba(13, 52, 46, 0.09);
+        }
 
-    /* 2. 标题样式 */
-    h1 {
-        font-weight: 300;
-        letter-spacing: 2px;
-        color: #2c3e50;
-        margin-bottom: 40px;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 10px;
-    }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
 
-    /* 3. 列表容器 */
-    ul {
-        list-style: none;
-        padding: 0;
-        width: 100%;
-        max-width: 600px;
-    }
+        .shell {
+            width: min(980px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 44px;
+        }
 
-    /* 4. 书籍条目卡片化 */
-    li {
-        background: #fff;
-        margin-bottom: 15px;
-        border-radius: 8px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
+        .nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            margin-bottom: 22px;
+        }
 
-    li:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-    }
+        header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: end;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 22px;
+        }
 
-    /* 5. 链接样式 */
-    a {
-        display: block;
-        padding: 18px 25px;
-        text-decoration: none;
-        color: #444;
-        font-size: 1.1rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-    }
+        h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            letter-spacing: 0;
+            line-height: 1.15;
+        }
 
-    /* 添加一个小图标装饰 */
-    a::before {
-        content: '📖';
-        margin-right: 15px;
-        font-size: 1.2rem;
-        filter: grayscale(100%);
-        transition: filter 0.3s;
-    }
+        .summary {
+            margin: 10px 0 0;
+            color: var(--muted);
+        }
 
-    li:hover a::before {
-        filter: grayscale(0%);
-    }
+        .counter {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            color: var(--accent);
+            font-weight: 800;
+            white-space: nowrap;
+        }
 
-    li:hover a {
-        color: #3498db;
-    }
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin: 24px 0;
+        }
 
-    /* 6. 响应式调整 */
-    @media (max-width: 480px) {
-        h1 { font-size: 1.5rem; }
-        a { font-size: 1rem; padding: 15px; }
-    }
-</style>
+        .search {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            font-size: 1rem;
+            outline: none;
+            background: white;
+        }
+
+        .search:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+        }
+
+        .clear-btn {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            color: var(--text);
+            font-weight: 700;
+            padding: 0 16px;
+            cursor: pointer;
+        }
+
+        .book-list {
+            display: grid;
+            gap: 12px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .book-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: center;
+            padding: 18px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 5px 18px rgba(13, 52, 46, 0.05);
+        }
+
+        .book-item:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .book-title {
+            margin: 0 0 4px;
+            font-size: 1.06rem;
+            line-height: 1.35;
+        }
+
+        .book-meta {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            color: var(--primary);
+            background: white;
+        }
+
+        .btn.primary {
+            color: white;
+            background: var(--primary);
+        }
+
+        .empty {
+            display: none;
+            padding: 18px;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            color: var(--muted);
+            background: white;
+        }
+
+        @media (max-width: 720px) {
+            .shell { width: min(100% - 24px, 980px); }
+            header, .book-item { grid-template-columns: 1fr; }
+            .counter { width: fit-content; }
+            .actions { justify-content: flex-start; }
+            .toolbar { flex-direction: column; }
+            .clear-btn { min-height: 42px; }
+        }
+    </style>
 </head>
 <body>
-    <h1>Books</h1>
-    <ul>
-        <li>
-            <a href="/books/中国历代政治得失.pdf">中国历代政治得失</a>
-        </li>
-        <li>
-            <a href="/books/国富论 ([英]亚当.斯密著，王亚南译) (Z-Library).pdf">国富论</a>
-        </li>
-        <li>
-            <a href="/books/巴菲特传：一个美国资本家的成长 (Roger Lowenstein) (Z-Library).pdf">巴菲特传：一个美国资本家的成长</a>
-        </li>
-        <li>
-             <a href="/books/段永平投资问答录(商业逻辑篇).pdf">段永平投资问答录(商业逻辑篇)</a>
-        </li>
-        <li>
-            <a href="/books/段永平投资问答录(投资逻辑篇).pdf">段永平投资问答录(投资逻辑篇)</a>
-        </li>
-        <li>
-            <a href="/books/段永平-Stop Doing List.pdf">段永平-Stop Doing List</a>
-        </li>
-    </ul>
-    
+    <main class="shell">
+        <a class="nav" href="/">返回首页</a>
+
+        <header>
+            <div>
+                <h1>投资书籍</h1>
+                <p class="summary">收录投资、商业、经济与社会观察相关 PDF，支持快速搜索和直接打开。</p>
+            </div>
+            <div class="counter"><span id="visibleCount">0</span> / <span id="totalCount">0</span> 本</div>
+        </header>
+
+        <section class="toolbar" aria-label="书籍筛选">
+            <input id="searchInput" class="search" type="search" placeholder="搜索书名、作者或主题..." autocomplete="off" />
+            <button id="clearButton" class="clear-btn" type="button">清空</button>
+        </section>
+
+        <ul id="bookList" class="book-list"></ul>
+        <div id="emptyState" class="empty">没有找到匹配的书籍。</div>
+    </main>
+
+    <script>
+        const books = [
+            {
+                title: "中国历代政治得失",
+                author: "钱穆",
+                topic: "历史与制度",
+                file: "/books/中国历代政治得失.pdf"
+            },
+            {
+                title: "国富论",
+                author: "亚当·斯密",
+                topic: "经济学",
+                file: "/books/国富论 ([英]亚当.斯密著，王亚南译) (Z-Library).pdf"
+            },
+            {
+                title: "巴菲特传：一个美国资本家的成长",
+                author: "Roger Lowenstein",
+                topic: "投资人物",
+                file: "/books/巴菲特传：一个美国资本家的成长 (Roger Lowenstein) (Z-Library).pdf"
+            },
+            {
+                title: "段永平投资问答录（商业逻辑篇）",
+                author: "段永平",
+                topic: "商业与经营",
+                file: "/books/段永平投资问答录(商业逻辑篇).pdf"
+            },
+            {
+                title: "段永平投资问答录（投资逻辑篇）",
+                author: "段永平",
+                topic: "投资框架",
+                file: "/books/段永平投资问答录(投资逻辑篇).pdf"
+            },
+            {
+                title: "段永平 - Stop Doing List",
+                author: "段永平",
+                topic: "决策清单",
+                file: "/books/段永平-Stop Doing List.pdf"
+            }
+        ];
+
+        const bookList = document.getElementById("bookList");
+        const searchInput = document.getElementById("searchInput");
+        const emptyState = document.getElementById("emptyState");
+        const visibleCount = document.getElementById("visibleCount");
+        const totalCount = document.getElementById("totalCount");
+
+        function renderBooks() {
+            const term = searchInput.value.trim().toLowerCase();
+            const filtered = books.filter(book => {
+                const haystack = `${book.title} ${book.author} ${book.topic}`.toLowerCase();
+                return haystack.includes(term);
+            });
+
+            bookList.innerHTML = filtered.map(book => `
+                <li class="book-item">
+                    <div>
+                        <h2 class="book-title">${book.title}</h2>
+                        <p class="book-meta">${book.author} · ${book.topic}</p>
+                    </div>
+                    <div class="actions">
+                        <a class="btn primary" href="${encodeURI(book.file)}" target="_blank" rel="noopener">阅读</a>
+                        <a class="btn" href="${encodeURI(book.file)}" download>下载</a>
+                    </div>
+                </li>
+            `).join("");
+
+            visibleCount.textContent = filtered.length;
+            emptyState.style.display = filtered.length ? "none" : "block";
+        }
+
+        totalCount.textContent = books.length;
+        document.getElementById("clearButton").addEventListener("click", () => {
+            searchInput.value = "";
+            searchInput.focus();
+            renderBooks();
+        });
+        searchInput.addEventListener("input", renderBooks);
+        renderBooks();
+    </script>
 </body>
 </html>

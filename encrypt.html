@@ -2,255 +2,427 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Symmetric Crypto Tool | 原生纯净版</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="浏览器本地对称加密与解密工具。" />
+    <title>对称加密工具 | 本地处理</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
-    
     <style>
-        /* --- 1. 定义设计变量 --- */
         :root {
-            --primary: #0284c7;
-            --primary-hover: #0369a1;
-            --success: #059669;
-            --success-hover: #047857;
-            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --border: #e2e8f0;
-            --radius-xl: 1.5rem;
-            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --primary: #0f766e;
+            --primary-strong: #115e59;
+            --success: #15803d;
+            --danger: #b91c1c;
+            --warning: #b45309;
+            --bg: #f7faf9;
+            --panel: #ffffff;
+            --text: #10201d;
+            --muted: #63736f;
+            --border: #dbe7e4;
+            --radius: 8px;
+            --shadow: 0 16px 42px rgba(13, 52, 46, 0.10);
         }
 
-        /* --- 2. 基础布局 --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg-gradient);
-            color: #1e293b;
+            margin: 0;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            line-height: 1.5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background:
+                linear-gradient(135deg, rgba(15, 118, 110, 0.10), transparent 34%),
+                var(--bg);
+            color: var(--text);
+            line-height: 1.55;
         }
 
-        .main-container {
-            width: 100%;
-            max-width: 850px;
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
+        .shell {
+            width: min(1080px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 44px;
+        }
+
+        .nav {
+            display: inline-flex;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .panel {
             overflow: hidden;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
 
-        /* --- 3. 头部样式 --- */
         header {
-            background: #0f172a;
+            padding: 28px;
+            background: #10201d;
             color: white;
-            padding: 40px 20px;
-            text-align: center;
         }
 
-        header h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.025em; }
-        header p { color: #94a3b8; font-size: 0.9rem; margin-top: 8px; }
+        h1 {
+            margin: 0;
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            letter-spacing: 0;
+            line-height: 1.15;
+        }
 
-        /* --- 4. 表单与控制区 --- */
-        .content-body { padding: 40px; }
+        header p {
+            margin: 10px 0 0;
+            color: #c7d7d3;
+        }
 
-        .settings-grid {
+        .content { padding: 26px; }
+
+        .settings {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 35px;
+            grid-template-columns: minmax(220px, 1fr) 180px auto;
+            gap: 14px;
+            align-items: end;
+            margin-bottom: 22px;
         }
 
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 0.85rem; font-weight: 700; color: #475569; }
+        .field { display: grid; gap: 8px; }
+        label { font-weight: 750; color: #36524d; }
 
         input, select, textarea {
-            padding: 12px 16px;
+            width: 100%;
             border: 1px solid var(--border);
-            border-radius: 0.75rem;
-            font-size: 0.95rem;
-            transition: all 0.2s;
+            border-radius: var(--radius);
             background: white;
+            color: var(--text);
+            padding: 12px 13px;
+            font: inherit;
             outline: none;
+        }
+
+        textarea {
+            min-height: 260px;
+            resize: vertical;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 0.94rem;
         }
 
         input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
         }
 
-        /* --- 5. 操作区网格 --- */
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+        .key-row {
+            position: relative;
         }
 
-        .text-area-wrapper { display: flex; flex-direction: column; gap: 12px; }
-        
-        .area-header { display: flex; justify-content: space-between; align-items: center; }
-        .copy-btn { 
-            font-size: 0.75rem; color: var(--primary); font-weight: 600; 
-            cursor: pointer; background: none; border: none; 
+        .key-row input {
+            padding-right: 88px;
         }
 
-        textarea { resize: none; background: #f8fafc; }
-
-        /* --- 6. 按钮样式 --- */
-        .btn {
-            padding: 14px;
-            border: none;
-            border-radius: 0.75rem;
-            color: white;
-            font-weight: 700;
+        .ghost-btn {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            color: var(--text);
+            min-height: 44px;
+            padding: 0 14px;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-weight: 750;
         }
 
-        .btn:active { transform: scale(0.98); }
-        .btn-encrypt { background: var(--primary); }
-        .btn-encrypt:hover { background: var(--primary-hover); }
-        .btn-decrypt { background: var(--success); }
-        .btn-decrypt:hover { background: var(--success-hover); }
+        .key-toggle {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            min-height: 32px;
+            padding: 0 10px;
+            color: var(--primary);
+        }
 
-        /* --- 7. 消息弹窗 --- */
+        .hint {
+            margin: 7px 0 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .workbench {
+            display: grid;
+            grid-template-columns: 1fr 72px 1fr;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .box-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .copy-btn {
+            border: 0;
+            color: var(--primary);
+            background: transparent;
+            cursor: pointer;
+            font-weight: 750;
+        }
+
+        .actions {
+            display: grid;
+            gap: 10px;
+            align-content: center;
+        }
+
+        .btn {
+            min-height: 44px;
+            border: 0;
+            border-radius: var(--radius);
+            color: white;
+            cursor: pointer;
+            font-weight: 800;
+            padding: 0 14px;
+            box-shadow: 0 8px 18px rgba(13, 52, 46, 0.12);
+        }
+
+        .btn.encrypt { background: var(--primary); }
+        .btn.decrypt { background: var(--success); }
+        .btn.clear { background: #475569; }
+        .btn:hover, .ghost-btn:hover, .copy-btn:hover { filter: brightness(0.96); }
+        .btn:active, .ghost-btn:active { transform: translateY(1px); }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 0.86rem;
+        }
+
         #toast {
             position: fixed;
-            bottom: 30px;
             left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            background: #1e293b;
-            color: white;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
-            z-index: 100;
+            bottom: 26px;
+            max-width: min(520px, calc(100% - 32px));
+            transform: translateX(-50%) translateY(14px);
             opacity: 0;
-            transition: opacity 0.3s, transform 0.3s;
             pointer-events: none;
+            padding: 12px 18px;
+            border-radius: var(--radius);
+            background: #10201d;
+            color: white;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            box-shadow: var(--shadow);
         }
-        #toast.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
 
-        /* 响应式 */
-        @media (max-width: 640px) {
-            .content-body { padding: 25px; }
-            header { padding: 30px 15px; }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #toast.error { background: var(--danger); }
+        #toast.warn { background: var(--warning); }
+
+        @media (max-width: 860px) {
+            .settings, .workbench { grid-template-columns: 1fr; }
+            .actions { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 560px) {
+            .shell { width: min(100% - 24px, 1080px); }
+            header, .content { padding: 20px; }
+            .actions { grid-template-columns: 1fr; }
+            textarea { min-height: 190px; }
         }
     </style>
 </head>
-
 <body>
+    <main class="shell">
+        <a class="nav" href="/">返回首页</a>
+        <section class="panel">
+            <header>
+                <h1>对称加密工具</h1>
+                <p>文本仅在当前浏览器中处理，不会上传到服务器。默认推荐使用 AES。</p>
+            </header>
 
-    <div class="main-container">
-        <header>
-            <h1>对称加密工具</h1>
-            <p>私密、安全、纯本地运行的加解密方案</p>
-        </header>
-
-        <div class="content-body">
-            <section class="settings-grid">
-                <div class="input-group">
-                    <label>加密/解密密钥</label>
-                    <input type="password" id="key" placeholder="在此输入您的密钥...">
-                </div>
-                <div class="input-group">
-                    <label>算法协议</label>
-                    <select id="algo">
-                        <option value="AES">AES (推荐)</option>
-                        <option value="DES">DES</option>
-                        <option value="TripleDES">TripleDES</option>
-                        <option value="Rabbit">Rabbit</option>
-                        <option value="RC4">RC4</option>
-                    </select>
-                </div>
-            </section>
-
-            <section class="tools-grid">
-                <div class="text-area-wrapper">
-                    <div class="area-header">
-                        <label class="input-group label">原始明文</label>
-                        <button class="copy-btn" onclick="copyText('plain')">复制内容</button>
+            <div class="content">
+                <section class="settings" aria-label="加密设置">
+                    <div class="field">
+                        <label for="key">密钥</label>
+                        <div class="key-row">
+                            <input type="password" id="key" placeholder="输入加密或解密密钥" autocomplete="off" />
+                            <button class="ghost-btn key-toggle" id="toggleKey" type="button">显示</button>
+                        </div>
+                        <p class="hint" id="keyHint">建议使用至少 12 个字符，并混合大小写、数字和符号。</p>
                     </div>
-                    <textarea id="plain" rows="7" placeholder="输入需要加密的文本..."></textarea>
-                    <button class="btn btn-encrypt" onclick="process('encrypt')">加密文本 ↓</button>
-                </div>
 
-                <div class="text-area-wrapper">
-                    <div class="area-header">
-                        <label class="input-group label">结果密文</label>
-                        <button class="copy-btn" onclick="copyText('cipher')">复制结果</button>
+                    <div class="field">
+                        <label for="algo">算法</label>
+                        <select id="algo">
+                            <option value="AES">AES（推荐）</option>
+                            <option value="TripleDES">TripleDES</option>
+                            <option value="DES">DES（兼容旧数据）</option>
+                            <option value="Rabbit">Rabbit</option>
+                            <option value="RC4">RC4（兼容旧数据）</option>
+                        </select>
                     </div>
-                    <textarea id="cipher" rows="7" placeholder="等待输出或粘贴密文..."></textarea>
-                    <button class="btn btn-decrypt" onclick="process('decrypt')">解密文本 ↑</button>
-                </div>
-            </section>
-        </div>
-    </div>
 
-    <div id="toast">提示消息</div>
+                    <button class="ghost-btn" id="swapButton" type="button">互换文本</button>
+                </section>
 
-<script>
-    // --- 核心逻辑 ---
-    function process(mode) {
-        const key = document.getElementById('key').value.trim();
-        const algo = document.getElementById('algo').value;
-        const plainEl = document.getElementById('plain');
-        const cipherEl = document.getElementById('cipher');
+                <section class="workbench" aria-label="加解密工作区">
+                    <div class="box">
+                        <div class="box-head">
+                            <label for="plain">明文</label>
+                            <button class="copy-btn" type="button" data-copy="plain">复制</button>
+                        </div>
+                        <textarea id="plain" placeholder="输入需要加密的文本。按 Ctrl + Enter 可快速加密。"></textarea>
+                        <div class="stats"><span id="plainCount">0 字符</span><span>输入区</span></div>
+                    </div>
 
-        if (!key) return showToast('请先输入密钥', 'error');
+                    <div class="actions">
+                        <button class="btn encrypt" id="encryptButton" type="button">加密</button>
+                        <button class="btn decrypt" id="decryptButton" type="button">解密</button>
+                        <button class="btn clear" id="clearButton" type="button">清空</button>
+                    </div>
 
-        try {
-            if (mode === 'encrypt') {
-                const text = plainEl.value.trim();
-                if (!text) return showToast('请输入明文');
-                const encrypted = CryptoJS[algo].encrypt(text, key).toString();
-                cipherEl.value = encrypted;
-                showToast(`使用 ${algo} 加密成功`);
-            } else {
-                const text = cipherEl.value.trim();
-                if (!text) return showToast('请输入密文');
-                const decrypted = CryptoJS[algo].decrypt(text, key).toString(CryptoJS.enc.Utf8);
-                if (!decrypted) throw new Error();
-                plainEl.value = decrypted;
-                showToast(`使用 ${algo} 解密成功`);
+                    <div class="box">
+                        <div class="box-head">
+                            <label for="cipher">密文</label>
+                            <button class="copy-btn" type="button" data-copy="cipher">复制</button>
+                        </div>
+                        <textarea id="cipher" placeholder="这里显示加密结果，也可以粘贴密文后解密。"></textarea>
+                        <div class="stats"><span id="cipherCount">0 字符</span><span>输出区</span></div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const keyEl = $("key");
+        const algoEl = $("algo");
+        const plainEl = $("plain");
+        const cipherEl = $("cipher");
+        const toastEl = $("toast");
+
+        function showToast(message, type = "info") {
+            toastEl.textContent = message;
+            toastEl.className = `show ${type}`;
+            window.clearTimeout(showToast.timer);
+            showToast.timer = window.setTimeout(() => {
+                toastEl.className = "";
+            }, 2600);
+        }
+
+        function updateStats() {
+            $("plainCount").textContent = `${plainEl.value.length} 字符`;
+            $("cipherCount").textContent = `${cipherEl.value.length} 字符`;
+            const score = [
+                keyEl.value.length >= 12,
+                /[A-Z]/.test(keyEl.value),
+                /[a-z]/.test(keyEl.value),
+                /\d/.test(keyEl.value),
+                /[^A-Za-z0-9]/.test(keyEl.value)
+            ].filter(Boolean).length;
+
+            const hint = score >= 4 ? "密钥强度较好。" : score >= 2 ? "密钥强度一般，建议增加长度和字符类型。" : "建议使用至少 12 个字符，并混合大小写、数字和符号。";
+            $("keyHint").textContent = hint;
+        }
+
+        function requireReady(target) {
+            if (!window.CryptoJS) {
+                showToast("CryptoJS 未加载，请检查网络后刷新页面。", "error");
+                return false;
             }
-        } catch (e) {
-            showToast('操作失败：请检查密钥或数据格式', 'error');
+            if (!keyEl.value.trim()) {
+                showToast("请先输入密钥。", "warn");
+                keyEl.focus();
+                return false;
+            }
+            if (!target.value.trim()) {
+                showToast("请先输入需要处理的文本。", "warn");
+                target.focus();
+                return false;
+            }
+            return true;
         }
-    }
 
-    // --- 辅助功能 ---
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    async function copyText(id) {
-        const content = document.getElementById(id).value;
-        if (!content) return showToast('内容为空');
-        try {
-            await navigator.clipboard.writeText(content);
-            showToast('已复制到剪切板');
-        } catch (err) {
-            document.getElementById(id).select();
-            document.execCommand('copy');
-            showToast('已复制 (兼容模式)');
+        function processText(mode) {
+            const algo = algoEl.value;
+            try {
+                if (mode === "encrypt") {
+                    if (!requireReady(plainEl)) return;
+                    cipherEl.value = CryptoJS[algo].encrypt(plainEl.value, keyEl.value).toString();
+                    showToast(`已使用 ${algo} 加密。`);
+                } else {
+                    if (!requireReady(cipherEl)) return;
+                    const decrypted = CryptoJS[algo].decrypt(cipherEl.value.trim(), keyEl.value).toString(CryptoJS.enc.Utf8);
+                    if (!decrypted) throw new Error("empty result");
+                    plainEl.value = decrypted;
+                    showToast(`已使用 ${algo} 解密。`);
+                }
+                updateStats();
+            } catch (error) {
+                showToast("操作失败，请检查密钥、算法或密文格式。", "error");
+            }
         }
-    }
-</script>
+
+        async function copyText(id) {
+            const target = $(id);
+            if (!target.value) {
+                showToast("没有可复制的内容。", "warn");
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(target.value);
+                showToast("已复制到剪贴板。");
+            } catch (error) {
+                target.select();
+                document.execCommand("copy");
+                showToast("已复制到剪贴板。");
+            }
+        }
+
+        $("encryptButton").addEventListener("click", () => processText("encrypt"));
+        $("decryptButton").addEventListener("click", () => processText("decrypt"));
+        $("clearButton").addEventListener("click", () => {
+            plainEl.value = "";
+            cipherEl.value = "";
+            updateStats();
+            plainEl.focus();
+            showToast("内容已清空。");
+        });
+        $("swapButton").addEventListener("click", () => {
+            [plainEl.value, cipherEl.value] = [cipherEl.value, plainEl.value];
+            updateStats();
+            showToast("明文和密文已互换。");
+        });
+        $("toggleKey").addEventListener("click", () => {
+            const isPassword = keyEl.type === "password";
+            keyEl.type = isPassword ? "text" : "password";
+            $("toggleKey").textContent = isPassword ? "隐藏" : "显示";
+        });
+        document.querySelectorAll("[data-copy]").forEach(button => {
+            button.addEventListener("click", () => copyText(button.dataset.copy));
+        });
+        [plainEl, cipherEl, keyEl].forEach(el => el.addEventListener("input", updateStats));
+        document.addEventListener("keydown", event => {
+            if (event.ctrlKey && event.key === "Enter") {
+                processText(document.activeElement === cipherEl ? "decrypt" : "encrypt");
+            }
+        });
+        updateStats();
+    </script>
 </body>
 </html>

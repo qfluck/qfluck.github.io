@@ -2,262 +2,345 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="个人工具与资源导航入口。" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <title>个人门户 | 纯净版</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+    <title>个人门户 | 工具与资源导航</title>
     <style>
-        /* --- 1. 变量与基础重置 --- */
         :root {
-            --primary: #0ea5e9;
-            --primary-hover: #2563eb;
-            --bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --card-bg: rgba(255, 255, 255, 0.7);
+            --primary: #0f766e;
+            --primary-strong: #115e59;
+            --accent: #b45309;
+            --bg: #f7faf9;
+            --panel: #ffffff;
+            --panel-muted: #eef6f4;
+            --text: #10201d;
+            --muted: #5f716d;
+            --border: #dbe7e4;
+            --shadow: 0 18px 45px rgba(13, 52, 46, 0.10);
+            --radius: 8px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; }
+        html { color-scheme: light; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            line-height: 1.6;
+            margin: 0;
             min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text);
+            background:
+                linear-gradient(140deg, rgba(15, 118, 110, 0.08), transparent 34%),
+                linear-gradient(20deg, rgba(180, 83, 9, 0.08), transparent 32%),
+                var(--bg);
+            line-height: 1.6;
         }
 
-        /* --- 2. 布局容器 --- */
-        .container {
-            max-width: 1000px;
+        a { color: inherit; }
+        .shell {
+            width: min(1120px, calc(100% - 32px));
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 32px 0 40px;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 60px;
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 34px;
         }
 
-        /* --- 3. 头部装饰 --- */
-        #greeting {
-            font-size: 3rem;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .mark {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius);
+            background: var(--primary);
+            color: white;
             font-weight: 800;
-            margin-bottom: 16px;
-            background: linear-gradient(to right, var(--primary), var(--primary-hover));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.7rem, 4vw, 3.2rem);
+            line-height: 1.15;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            margin: 8px 0 0;
+            color: var(--muted);
+            max-width: 680px;
         }
 
         .time-badge {
-            display: inline-block;
-            padding: 6px 20px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 0.9rem;
-            color: #0369a1;
-            letter-spacing: 0.05em;
+            white-space: nowrap;
+            padding: 9px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--primary-strong);
+            font-variant-numeric: tabular-nums;
         }
 
-        /* --- 4. 卡片网格布局 --- */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin: 26px 0;
         }
 
-        /* --- 5. 玻璃拟态卡片 --- */
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
-            padding: 30px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: block;
+        .search {
+            width: min(520px, 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            padding: 12px 14px;
+            font-size: 1rem;
+            outline: none;
         }
 
-        .card:hover {
-            transform: translateY(-8px);
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        .search:focus {
             border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
         }
 
-        .card-header {
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            min-height: 190px;
+            padding: 20px;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 25px rgba(13, 52, 46, 0.06);
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover, .card:focus-visible {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+            outline: none;
+        }
+
+        .card-top {
             display: flex;
             align-items: center;
-            margin-bottom: 12px;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
         }
 
-        .icon-box {
-            background: #e0f2fe;
-            padding: 10px;
-            border-radius: 12px;
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .card:hover .icon-box {
-            background: var(--primary);
-            color: white;
-        }
-
-        .icon-box svg {
-            width: 24px;
-            height: 24px;
-            stroke: currentColor;
-            fill: none;
-        }
-
-        .card h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            transition: color 0.3s;
-        }
-
-        .card:hover h2 {
+        .icon {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius);
+            background: var(--panel-muted);
             color: var(--primary);
         }
 
+        .icon svg { width: 23px; height: 23px; }
+        .tag {
+            color: var(--accent);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 1.16rem;
+            line-height: 1.35;
+        }
+
         .card p {
-            color: var(--text-muted);
+            margin: 0;
+            color: var(--muted);
             font-size: 0.95rem;
-            line-height: 1.5;
         }
 
-        /* --- 6. 页脚 --- */
+        .card .go {
+            margin-top: auto;
+            color: var(--primary-strong);
+            font-weight: 700;
+            padding-top: 18px;
+        }
+
+        .empty {
+            display: none;
+            margin: 22px 0;
+            padding: 18px;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.55);
+        }
+
         footer {
-            text-align: center;
-            margin-top: 80px;
-            padding-bottom: 40px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            margin-top: 42px;
+            color: var(--muted);
+            font-size: 0.9rem;
         }
 
-        .divider {
-            width: 40px;
-            height: 3px;
-            background: var(--primary);
-            opacity: 0.3;
-            margin: 0 auto 20px;
-            border-radius: 2px;
-        }
-
-        /* --- 7. 响应式微调 --- */
         @media (max-width: 640px) {
-            #greeting { font-size: 2.2rem; }
-            .container { padding: 20px; }
-            .card-grid { gap: 16px; }
+            .shell { width: min(100% - 24px, 1120px); padding-top: 20px; }
+            .topbar { align-items: flex-start; flex-direction: column; }
+            .time-badge { width: 100%; }
+            .toolbar { margin: 20px 0; }
+            .card { min-height: 170px; }
         }
     </style>
 </head>
-
 <body>
-
-    <div class="container">
+    <div class="shell">
         <header>
-            <h1 id="greeting">你好</h1>
-            <div class="time-badge">
-                <span id="datetime">加载中...</span>
+            <div class="topbar">
+                <div class="brand">
+                    <div class="mark" aria-hidden="true">Q</div>
+                    <div>
+                        <h1 id="greeting">个人门户</h1>
+                        <p class="subtitle">集中访问常用工具、收藏资源和阅读资料。</p>
+                    </div>
+                </div>
+                <time class="time-badge" id="datetime">正在加载时间...</time>
+            </div>
+            <div class="toolbar">
+                <input class="search" id="searchInput" type="search" placeholder="搜索工具或资源..." autocomplete="off" />
             </div>
         </header>
 
         <main>
-            <div id="card-container" class="card-grid"></div>
+            <div id="cardContainer" class="grid" aria-live="polite"></div>
+            <div id="emptyState" class="empty">没有找到匹配的入口。</div>
         </main>
 
         <footer>
-            <div class="divider"></div>
-            <p>&copy; <span id="currentYear"></span> 个人门户 · 纯净美学</p>
+            &copy; <span id="currentYear"></span> 个人门户
         </footer>
     </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // --- 配置数据 ---
-    const cardData = [
-        {
-            href: "/",
-            icon: `M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5`,
-            title: "网站主页",
-            description: "返回本站的根目录或起始页。"
-        },
-        {
-            href: "/encrypt.html",
-            icon: `M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z`,
-            title: "加密工具",
-            description: "文本对称加密和解密在线工具。"
-        },
-        {
-            href: "/book-market.html",
-            icon: `M12 6.75V21m0-14.25a9 9 0 100 18 9 9 0 000-18zM3.75 12h16.5`,
-            title: "个人收藏",
-            description: "探索我收藏的精彩内容。"
-        },
-        {
-            href: "/book.html",
-            icon: `M12 21V4.5l7.5-3v13.5l-7.5 3zm0 0V4.5l-7.5-3v13.5l7.5 3z`,
-            title: "投资书籍",
-            description: "关于金钱与智慧的进阶之路。"
+    <script>
+        const cards = [
+            {
+                href: "/encrypt.html",
+                title: "对称加密工具",
+                tag: "工具",
+                description: "在浏览器本地完成文本加密、解密、复制和快速清空。",
+                keywords: "encrypt crypto aes des 加密 解密",
+                icon: "lock"
+            },
+            {
+                href: "/VO.html",
+                title: "JSON 实体类生成器",
+                tag: "开发",
+                description: "将 JSON 样例转换为 TypeScript、Java、Python 或 C# 数据结构。",
+                keywords: "json entity class typescript java python csharp vo",
+                icon: "code"
+            },
+            {
+                href: "/book-market.html",
+                title: "灵动收藏",
+                tag: "资源",
+                description: "通过远端 API 管理个人收藏，支持搜索、主题切换和在线编辑。",
+                keywords: "bookmark collection 收藏 资源",
+                icon: "bookmark"
+            },
+            {
+                href: "/book.html",
+                title: "投资书籍",
+                tag: "阅读",
+                description: "浏览和打开本地收录的投资、商业与经济类 PDF。",
+                keywords: "books pdf reading 投资 书籍",
+                icon: "book"
+            },
+            {
+                href: "/jiachao.txt",
+                title: "订阅文本",
+                tag: "文本",
+                description: "查看站点提供的订阅文本资源。",
+                keywords: "txt subscribe 订阅 文本",
+                icon: "file"
+            }
+        ];
+
+        const iconPaths = {
+            lock: "M7 10V7a5 5 0 0 1 10 0v3m-9 0h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z",
+            code: "m9 18-6-6 6-6m6 0 6 6-6 6",
+            bookmark: "M6 4h12v17l-6-4-6 4V4Z",
+            book: "M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Zm0 0v16",
+            file: "M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Zm0 0v6h6"
+        };
+
+        const cardContainer = document.getElementById("cardContainer");
+        const emptyState = document.getElementById("emptyState");
+        const searchInput = document.getElementById("searchInput");
+
+        function renderCards() {
+            const term = searchInput.value.trim().toLowerCase();
+            const filtered = cards.filter(card => {
+                const haystack = `${card.title} ${card.description} ${card.keywords}`.toLowerCase();
+                return haystack.includes(term);
+            });
+
+            cardContainer.innerHTML = filtered.map(card => `
+                <a class="card" href="${card.href}">
+                    <div class="card-top">
+                        <span class="icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="${iconPaths[card.icon]}"></path>
+                            </svg>
+                        </span>
+                        <span class="tag">${card.tag}</span>
+                    </div>
+                    <h2>${card.title}</h2>
+                    <p>${card.description}</p>
+                    <span class="go">打开</span>
+                </a>
+            `).join("");
+
+            emptyState.style.display = filtered.length ? "none" : "block";
         }
-    ];
 
-    // --- 动态生成 ---
-    const container = document.getElementById('card-container');
-    container.innerHTML = cardData.map(card => `
-        <a href="${card.href}" target="_blank" class="card">
-            <div class="card-header">
-                <div class="icon-box">
-                    <svg viewBox="0 0 24 24" stroke-width="1.5">
-                        <path d="${card.icon}" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <h2>${card.title}</h2>
-            </div>
-            <p>${card.description}</p>
-        </a>
-    `).join('');
+        function updateTime() {
+            const now = new Date();
+            const hour = now.getHours();
+            const greeting = hour < 5 ? "夜深了" : hour < 11 ? "早上好" : hour < 13 ? "中午好" : hour < 18 ? "下午好" : "晚上好";
 
-    // --- 时间与问候 ---
-    const updateTime = () => {
-        const now = new Date();
-        const hours = now.getHours();
-        
-        document.getElementById('datetime').textContent = now.toLocaleString('zh-CN', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', second: '2-digit',
-            hour12: false, weekday: 'long'
-        });
-        document.getElementById('currentYear').textContent = now.getFullYear();
+            document.getElementById("greeting").textContent = `${greeting}，这里是个人门户`;
+            document.getElementById("datetime").textContent = now.toLocaleString("zh-CN", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                weekday: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            });
+            document.getElementById("currentYear").textContent = now.getFullYear();
+        }
 
-        let greeting = '晚上好';
-        if (hours >= 5 && hours < 11) greeting = '早上好';
-        else if (hours >= 11 && hours < 13) greeting = '中午好';
-        else if (hours >= 13 && hours < 18) greeting = '下午好';
-        
-        document.getElementById('greeting').textContent = `${greeting}!`;
-    };
-
-    updateTime();
-    setInterval(updateTime, 1000);
-});
-</script>
-
+        searchInput.addEventListener("input", renderCards);
+        renderCards();
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
 </body>
 </html>

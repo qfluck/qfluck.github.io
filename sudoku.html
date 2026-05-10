@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经典智能数独 | 科技版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+
+        /* 科技风全局背景 */
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 10%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 科技网格装饰 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            z-index: 10;
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        /* ========== 难度选择首页 科技风 ========== */
+        .home {
+            display: block;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .home-title {
+            font-size: 36px;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .home-subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        /* 难度卡片组 */
+        .diff-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        /* 难度卡片 */
+        .diff-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .diff-card:hover {
+            transform: translateY(-5px);
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .diff-card.active {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .diff-name {
+            font-size: 18px;
+            color: #ffffff;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .diff-star {
+            color: #fbbf24;
+            font-size: 14px;
+        }
+
+        .diff-desc {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        /* 开始游戏按钮 */
+        .start-btn {
+            width: 220px;
+            height: 50px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.7);
+        }
+
+        /* 电脑端适配 */
+        @media (min-width: 480px) {
+            .diff-group {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ========== 游戏页面 ========== */
+        .game {
+            display: none;
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* 游戏标题 + 优化时间显示 */
+        .game-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        /* 优化时间样式 - 科技风超大号 */
+        .timer {
+            font-size: 28px;
+            font-weight: bold;
+            color: #38bdf8;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+            letter-spacing: 2px;
+        }
+
+        /* ========== 顶部游戏控制按钮 ========== */
+        .top-controls {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* 功能按钮 */
+        .control-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        /* 按钮颜色 */
+        .btn-new { background: #10b981; }
+        .btn-check { background: #f59e0b; }
+
+        /* 数独棋盘 */
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1px;
+            background: #475569;
+            width: 100%;
+            aspect-ratio: 1/1;
+            margin: 0 auto 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .cell {
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cell-fixed { background: #e2e8f0; color: #1e293b; cursor: default; }
+        .cell-easy { background: #d1fae5; color: #0f766e; }
+        .cell-medium { background: #fef3c7; color: #92400e; }
+        .cell-hard { background: #ffedd5; color: #c2410c; }
+        .cell-error { color: #ef4444 !important; }
+        .cell-active { outline: 3px solid #3b82f6; outline-offset: -3px; }
+
+        /* 候选答案 */
+        .candidate-box {
+            text-align: center;
+            color: #8b5cf6;
+            font-weight: bold;
+            height: 28px;
+            margin-bottom: 15px;
+            padding: 8px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* ========== 底部操作和收藏按钮 ========== */
+        .bottom-section {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+        }
+
+        .section-title {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-undo { background: #6366f1; }
+        .btn-redo { background: #8b5cf6; }
+        .btn-clear { background: #f97316; }
+        .btn-collect { background: #ec4899; }
+        .btn-list { background: #8b5cf6; }
+        .btn-auto { background: #ef4444; display: none; }
+
+        /* 规则 */
+        .rule {
+            padding-top: 15px;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+            font-size: 12px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* ========== 返回按钮（单独一行 最底部） ========== */
+        .back-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 550px;
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: none;
+        }
+
+        .back-btn {
+            width: 100%;
+            height: 45px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            filter: brightness(1.2);
+        }
+
+        /* 弹窗 */
+        .mask {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            animation: fade 0.3s ease;
+        }
+
+        .modal {
+            background: #1e293b;
+            color: #fff;
+            width: 80%;
+            max-width: 320px;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .modal-ok {
+            padding: 8px 30px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        /* 收藏弹窗 */
+        .collect-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .collect-content {
+            background: #1e293b;
+            width: 90%; max-width: 400px;
+            border-radius: 15px;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .collect-item {
+            padding: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @keyframes fade {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 难度选择页面 -->
+        <div class="home" id="homePage">
+            <h1 class="home-title">智能数独</h1>
+            <p class="home-subtitle">科技风益智休闲游戏</p>
+            
+            <div class="diff-group" id="diffGroup">
+                <div class="diff-card" data-diff="easy">
+                    <div class="diff-name">入门 <span class="diff-star">⭐</span></div>
+                    <div class="diff-desc">35个空格，新手友好，轻松上手</div>
+                </div>
+                <div class="diff-card" data-diff="simple">
+                    <div class="diff-name">简单 <span class="diff-star">⭐⭐</span></div>
+                    <div class="diff-desc">45个空格，基础练习，休闲娱乐</div>
+                </div>
+                <div class="diff-card active" data-diff="medium">
+                    <div class="diff-name">中等 <span class="diff-star">⭐⭐⭐</span></div>
+                    <div class="diff-desc">55个空格，标准难度，日常挑战</div>
+                </div>
+                <div class="diff-card" data-diff="hard">
+                    <div class="diff-name">困难 <span class="diff-star">⭐⭐⭐⭐</span></div>
+                    <div class="diff-desc">60个空格，高手进阶，逻辑考验</div>
+                </div>
+                <div class="diff-card" data-diff="expert">
+                    <div class="diff-name">专家 <span class="diff-star">⭐⭐⭐⭐⭐</span></div>
+                    <div class="diff-desc">64个空格，极限挑战，骨灰级玩家</div>
+                </div>
+            </div>
+
+            <button class="start-btn" id="startBtn">开始游戏</button>
+        </div>
+
+        <!-- 游戏页面 -->
+        <div class="game" id="gamePage">
+            <!-- 顶部游戏控制 -->
+            <div class="top-controls">
+                <div class="control-group">
+                    <button class="control-btn btn-new" id="newGame">🔄 新游戏</button>
+                    <button class="control-btn btn-check" id="check">✅ 检查答案</button>
+                </div>
+            </div>
+
+            <!-- 计时器 -->
+            <div class="game-header">
+                <div class="timer" id="timer">00:00</div>
+            </div>
+
+            <!-- 候选答案 -->
+            <div class="candidate-box" id="candidate-box">候选答案：点击空白格查看</div>
+
+            <!-- 数独棋盘 -->
+            <div class="sudoku-board" id="sudoku-board"></div>
+
+            <!-- 操作编辑组 -->
+            <div class="bottom-section">
+                <div class="section-title">操作编辑</div>
+                <div class="control-group">
+                    <button class="control-btn btn-undo" id="undo">↩️ 撤销</button>
+                    <button class="control-btn btn-redo" id="redo">↪️ 重做</button>
+                    <button class="control-btn btn-clear" id="clear">🗑️ 清空</button>
+                </div>
+            </div>
+
+            <!-- 收藏管理组 -->
+            <div class="bottom-section">
+                <div class="section-title">收藏管理</div>
+                <div class="control-group">
+                    <button class="control-btn btn-collect" id="collect">📌 收藏本局</button>
+                    <button class="control-btn btn-list" id="showCollection">📂 收藏列表</button>
+                </div>
+            </div>
+
+            <!-- 自动填充按钮 -->
+            <div class="bottom-section" id="autoFillSection" style="display:none;">
+                <div class="section-title">辅助功能</div>
+                <div class="control-group">
+                    <button class="control-btn btn-auto" id="autoFill">⚡ 自动填充</button>
+                </div>
+            </div>
+
+            <div class="rule">
+                <p>📖 规则：每行、每列、每个3×3九宫格内数字1-9不重复</p>
+            </div>
+        </div>
+
+        <!-- 返回按钮 单独一行 最底部 -->
+        <div class="back-bar" id="backBar">
+            <button class="back-btn" id="backBtn">返回难度选择</button>
+        </div>
+    </div>
+
+    <!-- 提示弹窗 -->
+    <div class="mask" id="tipMask">
+        <div class="modal">
+            <p id="tipText"></p>
+            <button class="modal-ok" id="modalOkBtn">确定</button>
+        </div>
+    </div>
+
+    <!-- 收藏弹窗 -->
+    <div class="collect-modal" id="collectModal">
+        <div class="collect-content">
+            <div style="display:flex;justify-content:space-between;margin-bottom:15px">
+                <h3>我的收藏</h3>
+                <span style="cursor:pointer;color:#fff;font-size:20px" id="closeCollect">×</span>
+            </div>
+            <div id="collectList"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let board = [], solution = [], fixedBoard = [];
+            let history = [], redoStack = [];
+            let timer = null, seconds = 0;
+            let selectedCell = null, currentDiff = "medium";
+
+            const DIFF = {
+                easy: { holes:35, name:"入门" },
+                simple: { holes:45, name:"简单" },
+                medium: { holes:55, name:"中等" },
+                hard: { holes:60, name:"困难" },
+                expert: { holes:64, name:"专家" }
+            };
+
+            // 弹窗函数
+            function showTip(text) {
+                document.getElementById("tipText").innerText = text;
+                document.getElementById("tipMask").style.display = "flex";
+            }
+            function closeTip() {
+                document.getElementById("tipMask").style.display = "none";
+            }
+            document.getElementById("modalOkBtn").addEventListener('click', closeTip);
+
+            // 难度选择
+            const cards = document.querySelectorAll(".diff-card");
+            cards.forEach(card => {
+                card.onclick = () => {
+                    cards.forEach(c => c.classList.remove("active"));
+                    card.classList.add("active");
+                    currentDiff = card.dataset.diff;
+                }
+            });
+
+            // 页面切换
+            document.getElementById("startBtn").onclick = () => {
+                document.getElementById("homePage").style.display = "none";
+                document.getElementById("gamePage").style.display = "block";
+                document.getElementById("backBar").style.display = "block";
+                initGame(currentDiff);
+            };
+            document.getElementById("backBtn").onclick = () => {
+                document.getElementById("gamePage").style.display = "none";
+                document.getElementById("homePage").style.display = "block";
+                document.getElementById("backBar").style.display = "none";
+                clearInterval(timer);
+            };
+
+            // 数独核心算法
+            function generateSolution() {
+                let grid = Array.from({length:9},()=>Array(9).fill(0));
+                fillGrid(grid);
+                return grid;
+            }
+            function fillGrid(grid) {
+                for(let r=0;r<9;r++) for(let c=0;c<9;c++) {
+                    if(grid[r][c]===0) {
+                        let nums = shuffle([1,2,3,4,5,6,7,8,9]);
+                        for(let n of nums) {
+                            if(isValid(grid,r,c,n)) {
+                                grid[r][c]=n;
+                                if(fillGrid(grid)) return true;
+                                grid[r][c]=0;
+                            }
+                        }
+                        return false;
+                    }
+                }
+                return true;
+            }
+            function isValid(grid,r,c,n) {
+                for(let i=0;i<9;i++) if(grid[r][i]===n||grid[i][c]===n) return false;
+                let x=Math.floor(r/3)*3,y=Math.floor(c/3)*3;
+                for(let i=0;i<3;i++) for(let j=0;j<3;j++) if(grid[x+i][y+j]===n) return false;
+                return true;
+            }
+            function shuffle(arr) {
+                for(let i=arr.length-1;i>0;i--) {
+                    let j=Math.floor(Math.random()*(i+1));
+                    [arr[i],arr[j]]=[arr[j],arr[i]];
+                }
+                return arr;
+            }
+            function generatePuzzle(sol,d) {
+                let g=JSON.parse(JSON.stringify(sol));
+                let h=DIFF[d].holes,c=0;
+                while(c<h) {
+                    let r=Math.floor(Math.random()*9),co=Math.floor(Math.random()*9);
+                    if(g[r][co]!==0) {g[r][co]=0;c++;}
+                }
+                return g;
+            }
+
+            // 棋盘渲染
+            function getCandidates(r,c) {
+                if(fixedBoard[r][c]!==0) return [];
+                let arr=[];
+                for(let n=1;n<=9;n++) if(isValid(board,r,c,n)) arr.push(n);
+                return arr;
+            }
+            function getCellClass(r,c) {
+                if(fixedBoard[r][c]!==0) return "cell cell-fixed";
+                let l=getCandidates(r,c).length;
+                if(l===1) return "cell cell-easy";
+                if(l<=3) return "cell cell-medium";
+                return "cell cell-hard";
+            }
+
+            // 游戏初始化
+            function initGame(d) {
+                currentDiff=d;
+                clearInterval(timer);
+                seconds=0;history=[];redoStack=[];selectedCell=null;
+                document.getElementById("autoFillSection").style.display="none";
+                document.getElementById("candidate-box").textContent="候选答案：点击空白格查看";
+                
+                solution=generateSolution();
+                fixedBoard=generatePuzzle(solution,d);
+                board=JSON.parse(JSON.stringify(fixedBoard));
+                
+                renderBoard();
+                startTimer();
+            }
+
+            function renderBoard() {
+                let el=document.getElementById("sudoku-board");
+                el.innerHTML="";
+                for(let r=0;r<9;r++) for(let c=0;c<9;c++) {
+                    let cell=document.createElement("div");
+                    cell.className=getCellClass(r,c);
+                    cell.textContent=board[r][c]||"";
+                    cell.dataset.r=r;cell.dataset.c=c;
+                    
+                    if(fixedBoard[r][c]===0) {
+                        cell.onclick=()=>selectCell(cell,r,c);
+                        cell.oninput=(e)=>inputNum(e,r,c);
+                        cell.contentEditable=true;
+                    }
+                    el.appendChild(cell);
+                }
+            }
+
+            // 单元格操作
+            function selectCell(cell,r,c) {
+                document.querySelectorAll(".cell").forEach(i=>i.classList.remove("cell-active"));
+                cell.classList.add("cell-active");
+                selectedCell={r,c,el:cell};
+                let can=getCandidates(r,c).slice(0,5);
+                document.getElementById("candidate-box").textContent=`候选：${can.join(" ")||"无"}`;
+            }
+            function inputNum(e,r,c) {
+                let v=e.target.textContent.replace(/[^1-9]/g,"");
+                v=v?parseInt(v[0]):0;
+                history.push({r,c,val:board[r][c]});
+                redoStack=[];
+                board[r][c]=v;
+                e.target.textContent=v||"";
+                setTimeout(renderBoard,0);
+            }
+
+            // 答案校验
+            function isFull() {
+                return board.every(r=>r.every(c=>c!==0));
+            }
+            function checkAnswer() {
+                if(!isFull()) return showTip("请填满所有空格后再检查！");
+                let err=false;
+                document.querySelectorAll(".cell").forEach(cell=>{
+                    let r=parseInt(cell.dataset.r),c=parseInt(cell.dataset.c);
+                    cell.classList.remove("cell-error");
+                    if(board[r][c]!==solution[r][c]&&fixedBoard[r][c]===0) {
+                        cell.classList.add("cell-error");
+                        err=true;
+                    }
+                });
+                if(err) {
+                    showTip("答案错误，错误格子已标红！\n可点击自动填充查看答案");
+                    document.getElementById("autoFillSection").style.display = "block";
+                } else {
+                    showTip(`🎉 恭喜通关！\n用时：${formatTime()}`);
+                    clearInterval(timer);
+                }
+            }
+
+            // 收藏功能
+            function saveCollect() {
+                let list=JSON.parse(localStorage.getItem("sudoku")||"[]");
+                let id=JSON.stringify(solution);
+                if(list.some(i=>i.id===id)) return showTip("已收藏本局游戏！");
+                list.push({id,time:new Date().toLocaleString(),diff:currentDiff,board,solution,fixedBoard,sec:seconds});
+                localStorage.setItem("sudoku",JSON.stringify(list));
+                showTip("✅ 收藏成功！");
+            }
+            function showCollect() {
+                let list=JSON.parse(localStorage.getItem("sudoku")||"[]");
+                let el=document.getElementById("collectList");
+                el.innerHTML=list.length===0?"<p style='text-align:center'>暂无收藏</p>":list.map((item,i)=>`
+                    <div class="collect-item">
+                        <div>${DIFF[item.diff].name} | ${item.time}</div>
+                        <div>
+                            <button onclick='loadCollect(${i})' style='background:#10b981;color:white;border:none;border-radius:4px;padding:4px 8px'>加载</button>
+                            <button onclick='delCollect(${i})' style='background:#ef4444;color:white;border:none;border-radius:4px;padding:4px 8px;margin-left:5px'>删除</button>
+                        </div>
+                    </div>
+                `).join("");
+                document.getElementById("collectModal").style.display="flex";
+            }
+            function loadCollect(i) {
+                let item=JSON.parse(localStorage.getItem("sudoku"))[i];
+                clearInterval(timer);
+                board=item.board;solution=item.solution;fixedBoard=item.fixedBoard;
+                seconds=item.sec;currentDiff=item.diff;
+                renderBoard();startTimer();closeCollect();showTip("已加载收藏游戏！");
+            }
+            function delCollect(i) {
+                let list=JSON.parse(localStorage.getItem("sudoku"));
+                list.splice(i,1);
+                localStorage.setItem("sudoku",JSON.stringify(list));
+                showCollect();showTip("删除成功！");
+            }
+            function closeCollect() {
+                document.getElementById("collectModal").style.display = "none";
+            }
+            document.getElementById("closeCollect").onclick = closeCollect;
+
+            function startTimer() {
+                timer=setInterval(()=>{
+                    seconds++;
+                    document.getElementById("timer").textContent = formatTime();
+                },1000);
+            }
+            function formatTime() {
+                let m=String(Math.floor(seconds/60)).padStart(2,"0");
+                let s=String(seconds%60).padStart(2,"0");
+                return `${m}:${s}`;
+            }
+
+            // 操作功能
+            function undo() {
+                if(history.length){
+                    let l = history.pop();
+                    redoStack.push(l);
+                    board[l.r][l.c] = l.val;
+                    renderBoard();
+                    if(selectedCell && selectedCell.r === l.r && selectedCell.c === l.c) {
+                        let cells = document.querySelectorAll(".cell");
+                        cells.forEach(cell => {
+                            if(parseInt(cell.dataset.r) === l.r && parseInt(cell.dataset.c) === l.c) {
+                                cell.classList.add("cell-active");
+                                selectedCell.el = cell;
+                            }
+                        });
+                    }
+                }else{
+                    showTip("无可撤销操作");
+                }
+            }
+            function redo() {
+                if(redoStack.length){
+                    let l = redoStack.pop();
+                    history.push(l);
+                    board[l.r][l.c] = l.val;
+                    renderBoard();
+                    if(selectedCell && selectedCell.r === l.r && selectedCell.c === l.c) {
+                        let cells = document.querySelectorAll(".cell");
+                        cells.forEach(cell => {
+                            if(parseInt(cell.dataset.r) === l.r && parseInt(cell.dataset.c) === l.c) {
+                                cell.classList.add("cell-active");
+                                selectedCell.el = cell;
+                            }
+                        });
+                    }
+                }else{
+                    showTip("无可重做操作");
+                }
+            }
+            function clearBoard() {
+                board=JSON.parse(JSON.stringify(fixedBoard));
+                history=[];redoStack=[];
+                document.getElementById("autoFillSection").style.display="none";
+                renderBoard();
+                showTip("已清空填写内容");
+            }
+            function autoFill() {
+                board=JSON.parse(JSON.stringify(solution));
+                renderBoard();
+                checkAnswer();
+            }
+
+            // 按钮绑定
+            document.getElementById("check").onclick=checkAnswer;
+            document.getElementById("undo").onclick=undo;
+            document.getElementById("redo").onclick=redo;
+            document.getElementById("clear").onclick=clearBoard;
+            document.getElementById("autoFill").onclick=autoFill;
+            document.getElementById("collect").onclick=saveCollect;
+            document.getElementById("showCollection").onclick=showCollect;
+            document.getElementById("newGame").onclick=()=>initGame(currentDiff);
+
+            // 全局函数
+            window.loadCollect = loadCollect;
+            window.delCollect = delCollect;
+        });
+    </script>
+</body>
+</html>
